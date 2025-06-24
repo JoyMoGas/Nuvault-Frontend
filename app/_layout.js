@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { LayoutContext } from '../context/LayoutContext';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function Layout() {
   const router = useRouter();
@@ -37,14 +38,16 @@ export default function Layout() {
     }
   }, [loading, isLoggedIn, segments]);
 
-  return (
+   return (
     <LayoutContext.Provider value={{ setAuthKey }}>
       {loading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" />
         </View>
       ) : (
-        <Slot />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Slot />
+        </GestureHandlerRootView>
       )}
     </LayoutContext.Provider>
   );
