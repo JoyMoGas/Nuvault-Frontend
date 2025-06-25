@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, Alert, Platform, ToastAndroid } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import api from '../services/api';
 import { useRouter } from 'expo-router';
 
@@ -37,6 +38,19 @@ export default function GeneratePassword() {
   useEffect(() => {
     generate();
   }, []);
+
+  const copyToClipboard = async () => {
+    if (!password) {
+      Alert.alert('Error', 'No hay contraseña para copiar');
+      return;
+    }
+    await Clipboard.setStringAsync(password);
+    if (Platform.OS === 'android') {
+      ToastAndroid.show('Contraseña copiada', ToastAndroid.SHORT);
+    } else {
+      Alert.alert('Copiado', 'Contraseña copiada al portapapeles');
+    }
+  };
 
   const ToggleButton = ({ label, value, onToggle }) => (
     <Pressable
@@ -78,8 +92,21 @@ export default function GeneratePassword() {
 
       {password ? (
         <>
-          <Text className="mb-2">Contraseña: {password}</Text>
-          <Text>Fuerza: {strength}</Text>
+          <Text className="mb-2 font-semibold">Contraseña generada:</Text>
+          <TextInput
+            value={password}
+            editable={false}
+            selectTextOnFocus={true}
+            className="border p-2 mb-2 rounded bg-gray-100"
+          />
+          <Text className="mb-4">Fuerza: {strength}</Text>
+
+          <Pressable
+            onPress={copyToClipboard}
+            className="bg-blue-600 py-2 rounded mb-4"
+          >
+            <Text className="text-white text-center font-semibold">Copiar Contraseña</Text>
+          </Pressable>
         </>
       ) : null}
 

@@ -12,23 +12,31 @@ export default function AddPassword() {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const addPassword = async () => {
-    if (!service || !username || !password) {
-      Alert.alert('Error', 'Llena todos los campos');
-      return;
-    }
-    try {
-      const res = await api.post('/add-password', {
-        service,
-        username,
-        password,
-        is_favorite: isFavorite,
-      });
-      Alert.alert('Éxito', res.data.message);
-      router.back();
-    } catch (e) {
+  if (!service || !username || !password) {
+    Alert.alert('Error', 'Llena todos los campos');
+    return;
+  }
+  try {
+    const res = await api.post('/add-password', {
+      service,
+      username,
+      password,
+      is_favorite: isFavorite,
+    });
+    Alert.alert('Éxito', res.data.message);
+    router.back();
+  } catch (e) {
+    // Aquí capturamos el error específico de conflicto
+    if (e.response && e.response.status === 409) {
+      Alert.alert('Error', e.response.data.message || 'Ya existe una contraseña para este servicio');
+    } else if (e.response && e.response.data && e.response.data.message) {
+      Alert.alert('Error', e.response.data.message);
+    } else {
       Alert.alert('Error', 'No se pudo agregar la contraseña');
     }
-  };
+  }
+};
+
 
   return (
     <View className="flex-1 px-6 pt-4">

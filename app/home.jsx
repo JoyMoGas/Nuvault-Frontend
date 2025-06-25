@@ -33,9 +33,11 @@ export default function HomeScreen() {
   const [modalAuth, setModalAuth] = useState({ visible: false, action: null, passId: null });
   const [pwdInput, setPwdInput] = useState('');
   const [showPwdInput, setShowPwdInput] = useState(false);
+  const [healthScore, setHealthScore] = useState(0);
 
   useEffect(() => {
     fetchPasswords(activeFilter);
+    fetchHealthScore();
   }, [activeFilter]);
 
   const fetchPasswords = async (filter) => {
@@ -57,6 +59,19 @@ export default function HomeScreen() {
       setError('Error al cargar contraseñas');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHealthScore = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const res = await api.get('/health-score', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const score = Math.max(0, res.data.health_score); // Nunca negativo
+      setHealthScore(score);
+    } catch {
+      setHealthScore(0); // En error, asumimos 0%
     }
   };
 
@@ -125,8 +140,15 @@ export default function HomeScreen() {
       setShowPwdInput(false);
 
       if (modalAuth.action === 'edit') {
-        router.push('/edit-password');
+        router.push({
+          pathname: '/edit-password',
+          params: { pass_id: modalAuth.passId }
+        });
       } else if (modalAuth.action === 'delete') {
+        await api.delete(`/delete-password/${modalAuth.passId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setPasswords((prev) => prev.filter((p) => p.pass_id !== modalAuth.passId));
         Alert.alert('Eliminado', 'Registro eliminado correctamente');
       }
     } catch {
@@ -223,21 +245,37 @@ export default function HomeScreen() {
         </Pressable>
       </View>
 
-      <Text className="text-3xl font-bold mb-4">Tus Contraseñas</Text>
-      {renderFilterButtons()}
-      {loading ? (
-        <ActivityIndicator size="large" style={{ flex: 1 }} />
-      ) : error ? (
-        <Text className="text-red-600">{error}</Text>
-      ) : (
-        <FlatList data={passwords} keyExtractor={(item) => item.pass_id} renderItem={renderItem} />
-      )}
+      <FlatList
+        data={passwords}
+        keyExtractor={(item) => item.pass_id}
+        renderItem={renderItem}
+        ListHeaderComponent={
+          <View className="mb-4">
+            <View className="mb-4 p-4 bg-green-100 rounded">
+              <Text className="text-xl font-bold text-center text-green-700">
+                Seguridad General: {healthScore}%
+              </Text>
+            </View>
+            <Text className="text-3xl font-bold mb-2">Tus Contraseñas</Text>
+            {renderFilterButtons()}
+          </View>
+        }
+        ListFooterComponent={<View style={{ height: 20 }} />}
+        ListEmptyComponent={
+          loading ? (
+            <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+          ) : error ? (
+            <Text className="text-red-600 text-center mt-4">{error}</Text>
+          ) : (
+            <Text className="text-center mt-4 text-gray-500">No hay contraseñas guardadas</Text>
+          )
+        }
+      />
 
       <Pressable className="bg-blue-600 py-3 rounded mt-4" onPress={handleLogOut}>
         <Text className="text-white text-lg text-center">Cerrar Sesión</Text>
       </Pressable>
 
-      {/* Modal de autenticación */}
       <Modal visible={modalAuth.visible} transparent animationType="fade">
         <View className="flex-1 justify-center items-center bg-black bg-opacity-50 p-4">
           <View className="bg-white w-full p-4 rounded">
@@ -254,7 +292,9 @@ export default function HomeScreen() {
                 onPress={() => setShowPwdInput(!showPwdInput)}
                 className="absolute right-3 top-3"
               >
-                <Text className="text-blue-600 font-semibold">{showPwdInput ? 'Ocultar' : 'Mostrar'}</Text>
+                <Text className="text-blue-600 font-semibold">
+                  {showPwdInput ? 'Ocultar' : 'Mostrar'}
+                </Text>
               </TouchableOpacity>
             </View>
             <View className="flex-row justify-end">
