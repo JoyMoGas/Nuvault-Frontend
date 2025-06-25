@@ -41,26 +41,27 @@ export default function HomeScreen() {
   }, [activeFilter]);
 
   const fetchPasswords = async (filter) => {
-    setLoading(true);
-    setError(null);
-    try {
-      let res;
-      if (filter === 'All') {
-        res = await api.post('/my-passwords', { show_plaintext: true });
-      } else if (filter === 'Favorites') {
-        res = await api.post('/favorites');
-      } else {
-        const order = filter === 'Recent' ? 'recent' : 'oldest';
-        res = await api.get(`/passwords-sorted?order=${order}`);
-      }
-      setPasswords(Array.isArray(res.data) ? res.data : []);
-      setVisiblePasswords({});
-    } catch {
-      setError('Error al cargar contraseñas');
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  setError(null);
+  try {
+    let res;
+    const config = { show_plaintext: true };
+    if (filter === 'All') {
+      res = await api.post('/my-passwords', config);
+    } else if (filter === 'Favorites') {
+      res = await api.post('/favorites', config);
+    } else {
+      const order = filter === 'Recent' ? 'recent' : 'oldest';
+      res = await api.get(`/passwords-sorted?order=${order}&show_plaintext=true`);
     }
-  };
+    setPasswords(Array.isArray(res.data) ? res.data : []);
+    setVisiblePasswords({});
+  } catch {
+    setError('Error al cargar contraseñas');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchHealthScore = async () => {
     try {
