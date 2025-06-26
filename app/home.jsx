@@ -1,30 +1,23 @@
 import { useEffect, useState, useContext } from 'react';
 import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  Pressable,
-  Alert,
-  ToastAndroid,
-  Platform,
-  Modal,
-  TextInput,
-  TouchableOpacity,
+  View, Text, FlatList, ActivityIndicator,
+  Alert, ToastAndroid, Platform, Modal, TextInput, TouchableOpacity, ImageBackground
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
 import api from '../services/api';
 import { LayoutContext } from '../context/LayoutContext';
-import { useRouter } from 'expo-router';
-import { Swipeable } from 'react-native-gesture-handler';
 
-const FILTERS = ['All', 'Favorites', 'Recent', 'Oldest'];
+import PasswordCard from '../components/PasswordCard';
+import FilterButtons from '../components/FilterButtons';
+import GenerateButton from '../components/buttons/GenerateButton';
+import AddButton from '../components/buttons/AddButton';
+import LogoutButton from '../components/buttons/LogoutButton';
+import HealthScore from '../components/health_score/HealthScore';
+import ScoreBar from '../components/health_score/ScoreBar';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const { setAuthKey } = useContext(LayoutContext);
-
   const [passwords, setPasswords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,33 +28,28 @@ export default function HomeScreen() {
   const [showPwdInput, setShowPwdInput] = useState(false);
   const [healthScore, setHealthScore] = useState(0);
 
-  useEffect(() => {
-    fetchPasswords(activeFilter);
-    fetchHealthScore();
-  }, [activeFilter]);
-
   const fetchPasswords = async (filter) => {
-  setLoading(true);
-  setError(null);
-  try {
-    let res;
-    const config = { show_plaintext: true };
-    if (filter === 'All') {
-      res = await api.post('/my-passwords', config);
-    } else if (filter === 'Favorites') {
-      res = await api.post('/favorites', config);
-    } else {
-      const order = filter === 'Recent' ? 'recent' : 'oldest';
-      res = await api.get(`/passwords-sorted?order=${order}&show_plaintext=true`);
+    setLoading(true);
+    setError(null);
+    try {
+      let res;
+      const config = { show_plaintext: true };
+      if (filter === 'All') {
+        res = await api.post('/my-passwords', config);
+      } else if (filter === 'Favorites') {
+        res = await api.post('/favorites', config);
+      } else {
+        const order = filter === 'Recent' ? 'recent' : 'oldest';
+        res = await api.get(`/passwords-sorted?order=${order}&show_plaintext=true`);
+      }
+      setPasswords(Array.isArray(res.data) ? res.data : []);
+      setVisiblePasswords({});
+    } catch {
+      setError('Error al cargar contraseñas');
+    } finally {
+      setLoading(false);
     }
-    setPasswords(Array.isArray(res.data) ? res.data : []);
-    setVisiblePasswords({});
-  } catch {
-    setError('Error al cargar contraseñas');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const fetchHealthScore = async () => {
     try {
@@ -69,12 +57,16 @@ export default function HomeScreen() {
       const res = await api.get('/health-score', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const score = Math.max(0, res.data.health_score); // Nunca negativo
-      setHealthScore(score);
+      setHealthScore(Math.max(0, res.data.health_score));
     } catch {
-      setHealthScore(0); // En error, asumimos 0%
+      setHealthScore(0);
     }
   };
+
+  useEffect(() => {
+    fetchPasswords(activeFilter);
+    fetchHealthScore();
+  }, [activeFilter]);
 
   const toggleFavorite = async (id) => {
     try {
@@ -100,25 +92,9 @@ export default function HomeScreen() {
       return;
     }
     await Clipboard.setStringAsync(password);
-    if (Platform.OS === 'android') {
-      ToastAndroid.show('Contraseña copiada', ToastAndroid.SHORT);
-    } else {
-      Alert.alert('Copiado', 'Contraseña copiada');
-    }
-  };
-
-  const handleLogOut = () => {
-    Alert.alert('Cerrar Sesión', '¿Seguro?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Aceptar',
-        onPress: async () => {
-          await AsyncStorage.removeItem('token');
-          setAuthKey((prev) => prev + 1);
-          Alert.alert('Sesión cerrada');
-        },
-      },
-    ]);
+    Platform.OS === 'android'
+      ? ToastAndroid.show('Contraseña copiada', ToastAndroid.SHORT)
+      : Alert.alert('Copiado', 'Contraseña copiada');
   };
 
   const openAuthModal = (action, passId) => {
@@ -136,15 +112,8 @@ export default function HomeScreen() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setModalAuth({ visible: false, action: null, passId: null });
-      setPwdInput('');
-      setShowPwdInput(false);
-
       if (modalAuth.action === 'edit') {
-        router.push({
-          pathname: '/edit-password',
-          params: { pass_id: modalAuth.passId }
-        });
+        router.push({ pathname: '/edit-password', params: { pass_id: modalAuth.passId } });
       } else if (modalAuth.action === 'delete') {
         await api.delete(`/delete-password/${modalAuth.passId}`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -152,169 +121,184 @@ export default function HomeScreen() {
         setPasswords((prev) => prev.filter((p) => p.pass_id !== modalAuth.passId));
         Alert.alert('Eliminado', 'Registro eliminado correctamente');
       }
+
+      setModalAuth({ visible: false, action: null, passId: null });
+      setPwdInput('');
+      setShowPwdInput(false);
     } catch {
       Alert.alert('Error', 'Contraseña inválida');
     }
   };
 
-  const renderFilterButtons = () => (
-    <View className="flex-row justify-between mb-4">
-      {FILTERS.map((filter) => (
-        <Pressable
-          key={filter}
-          onPress={() => setActiveFilter(filter)}
-          className={`px-4 py-2 rounded-full mx-1 ${
-            activeFilter === filter ? 'bg-blue-600' : 'bg-gray-300'
-          }`}
-        >
-          <Text className={activeFilter === filter ? 'text-white' : 'text-gray-800'}>
-            {filter}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-
-  const renderRightActions = (item) => (
-    <View className="flex-row h-full items-center">
-      <Pressable
-        onPress={() => openAuthModal('edit', item.pass_id)}
-        className="bg-yellow-500 justify-center items-center px-4"
-      >
-        <Text>Editar</Text>
-      </Pressable>
-      <Pressable
-        onPress={() => openAuthModal('delete', item.pass_id)}
-        className="bg-red-600 justify-center items-center px-4"
-      >
-        <Text className="text-white">Eliminar</Text>
-      </Pressable>
-    </View>
-  );
-
-  const renderItem = ({ item }) => {
-    const show = visiblePasswords[item.pass_id];
-    return (
-      <Swipeable renderRightActions={() => renderRightActions(item)}>
-        <View className="mb-4 p-4 border border-gray-300 rounded bg-white">
-          <Text className="text-xl font-semibold">{item.service}</Text>
-          <Text className="text-gray-700">Usuario: {item.username}</Text>
-          <Text className="text-gray-700">
-            Contraseña: {show ? item.password : '********'}
-          </Text>
-          <View className="flex-row mt-3 space-x-3 flex-wrap">
-            <Pressable
-              onPress={() => toggleVisibility(item.pass_id)}
-              className="bg-yellow-500 py-2 px-4 rounded"
-            >
-              <Text className="text-white font-semibold">{show ? 'Ocultar' : 'Ver'}</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => toggleFavorite(item.pass_id)}
-              className={`py-2 px-4 rounded ${
-                item.is_favorite ? 'bg-red-600' : 'bg-gray-400'
-              }`}
-            >
-              <Text className="text-white">{item.is_favorite ? '❤️' : '♡'} Favorito</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => copyToClipboard(item.password)}
-              className="bg-blue-600 py-2 px-4 rounded"
-            >
-              <Text className="text-white font-semibold">Copiar</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Swipeable>
-    );
-  };
-
   return (
-    <View className="flex-1 px-6 pt-4 bg-white">
-      <View className="flex-row justify-between mb-6">
-        <Pressable
-          onPress={() => router.push('/generate-password')}
-          className="bg-green-600 py-3 px-4 rounded w-1/2 mr-2"
-        >
-          <Text className="text-white text-center">Generar</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => router.push('/add-password')}
-          className="bg-blue-600 py-3 px-4 rounded w-1/2 ml-2"
-        >
-          <Text className="text-white text-center">Añadir</Text>
-        </Pressable>
-      </View>
+  <View className="flex-1 bg-white relative">
+    <FlatList
+      data={passwords}
+      keyExtractor={(item) => item.pass_id}
+      ListHeaderComponent={
+        <>
+          {/* Fondo con imagen + Score + botón */}
+          <View style={{ zIndex: 5 }}>
+            <ImageBackground
+              source={require('../assets/fondo.png')}
+              resizeMode="cover"
+              style={{
+                paddingTop: 80,
+                paddingBottom: 60,
+                paddingHorizontal: 16,
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+              }}
+            >
+              {/* ScoreBar con HealthScore centrado */}
+              <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center', marginTop: 40, marginBottom: 30 }}>
+                <View style={{ zIndex: 10 }}>
+                  <ScoreBar score={healthScore} />
+                </View>
+                <View
+                  style={{
+                    position: 'absolute',
+                    zIndex: 999, // Muy por encima del difuminado y de ScoreBar
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <HealthScore score={healthScore} />
+                </View>
+              </View>
 
-      <FlatList
-        data={passwords}
-        keyExtractor={(item) => item.pass_id}
-        renderItem={renderItem}
-        ListHeaderComponent={
-          <View className="mb-4">
-            <View className="mb-4 p-4 bg-green-100 rounded">
-              <Text className="text-xl font-bold text-center text-green-700">
-                Seguridad General: {healthScore}%
-              </Text>
-            </View>
-            <Text className="text-3xl font-bold mb-2">Tus Contraseñas</Text>
-            {renderFilterButtons()}
-          </View>
-        }
-        ListFooterComponent={<View style={{ height: 20 }} />}
-        ListEmptyComponent={
-          loading ? (
-            <ActivityIndicator size="large" style={{ marginTop: 20 }} />
-          ) : error ? (
-            <Text className="text-red-600 text-center mt-4">{error}</Text>
-          ) : (
-            <Text className="text-center mt-4 text-gray-500">No hay contraseñas guardadas</Text>
-          )
-        }
-      />
 
-      <Pressable className="bg-blue-600 py-3 rounded mt-4" onPress={handleLogOut}>
-        <Text className="text-white text-lg text-center">Cerrar Sesión</Text>
-      </Pressable>
-
-      <Modal visible={modalAuth.visible} transparent animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-50 p-4">
-          <View className="bg-white w-full p-4 rounded">
-            <Text className="text-lg mb-2 font-semibold">Introduce tu contraseña</Text>
-            <View className="relative mb-4">
-              <TextInput
-                value={pwdInput}
-                onChangeText={setPwdInput}
-                secureTextEntry={!showPwdInput}
-                placeholder="••••••••"
-                className="border p-3 pr-16 rounded"
-              />
-              <TouchableOpacity
-                onPress={() => setShowPwdInput(!showPwdInput)}
-                className="absolute right-3 top-3"
-              >
-                <Text className="text-blue-600 font-semibold">
-                  {showPwdInput ? 'Ocultar' : 'Mostrar'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View className="flex-row justify-end">
-              <Pressable
-                onPress={() => {
-                  setModalAuth({ visible: false });
-                  setPwdInput('');
-                  setShowPwdInput(false);
+              {/* Difuminado gris encima de HealthBar pero debajo de HealthScore */}
+              <View
+                style={{
+                  position: 'absolute',
+                  bottom: 40,
+                  left: 0,
+                  right: 0,
+                  height: 200,
+                  zIndex: 15,
                 }}
+                pointerEvents="none"
               >
-                <Text className="text-gray-600 px-4">Cancelar</Text>
-              </Pressable>
-              <Pressable onPress={confirmAuth}>
-                <Text className="text-blue-600 px-4 font-semibold">Aceptar</Text>
-              </Pressable>
-            </View>
+                <LinearGradient
+                  colors={[
+                    'rgba(46,46,46,0.95)',
+                    'rgba(46,46,46,0.8)',
+                    'rgba(46,46,46,0.6)',
+                    'transparent',
+                  ]}
+                  start={{ x: 0.5, y: 1 }}
+                  end={{ x: 0.5, y: 0 }}
+                  style={{ flex: 1 }}
+                />
+              </View>
+
+              {/* Botón Generar dentro de la imagen, más arriba */}
+              <View style={{ position: 'absolute', bottom: 60, right: 20, zIndex: 30 }}>
+                <GenerateButton />
+              </View>
+            </ImageBackground>
+          </View>
+
+          {/* Card blanca con border radius */}
+          <View
+            style={{
+              backgroundColor: '#ffffff',
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              paddingHorizontal: 16,
+              paddingTop: 24,
+              marginTop: -40,
+              marginBottom: 20,
+              zIndex: 50,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: -3 },
+              shadowOpacity: 0.1,
+              shadowRadius: 6,
+              elevation: 5,
+            }}
+          >
+            <FilterButtons activeFilter={activeFilter} onChange={setActiveFilter} />
+            <Text className="text-3xl font-bold mb-8">Your Vaults</Text>
+          </View>
+        </>
+      }
+      renderItem={({ item }) => (
+        <PasswordCard
+          item={item}
+          visible={visiblePasswords[item.pass_id]}
+          onToggleVisibility={toggleVisibility}
+          onToggleFavorite={toggleFavorite}
+          onCopy={copyToClipboard}
+          onEdit={(id) => openAuthModal('edit', id)}
+          onDelete={(id) => openAuthModal('delete', id)}
+        />
+      )}
+      ListFooterComponent={<View style={{ height: 100 }} />}
+      ListEmptyComponent={
+        loading ? (
+          <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+        ) : error ? (
+          <Text className="text-red-600 text-center mt-4">{error}</Text>
+        ) : (
+          <Text className="text-center mt-4 text-gray-500">No hay contraseñas guardadas</Text>
+        )
+      }
+    />
+
+    {/* Botón flotante redondo para Añadir */}
+    <View
+      style={{
+        position: 'absolute',
+        bottom: 24,
+        right: 24,
+        zIndex: 50,
+      }}
+    >
+      <AddButton round />
+    </View>
+
+    <LogoutButton />
+
+    {/* Modal para autenticación */}
+    <Modal visible={modalAuth.visible} transparent animationType="fade">
+      <View className="flex-1 justify-center items-center bg-black bg-opacity-50 p-4">
+        <View className="bg-white w-full p-4 rounded">
+          <Text className="text-lg mb-2 font-semibold">Introduce tu contraseña</Text>
+          <View className="relative mb-4">
+            <TextInput
+              value={pwdInput}
+              onChangeText={setPwdInput}
+              secureTextEntry={!showPwdInput}
+              placeholder="••••••••"
+              className="border p-3 pr-16 rounded"
+            />
+            <TouchableOpacity
+              onPress={() => setShowPwdInput(!showPwdInput)}
+              className="absolute right-3 top-3"
+            >
+              <Text className="text-blue-600 font-semibold">
+                {showPwdInput ? 'Ocultar' : 'Mostrar'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View className="flex-row justify-end">
+            <Text
+              className="text-gray-600 px-4"
+              onPress={() => setModalAuth({ visible: false })}
+            >
+              Cancelar
+            </Text>
+            <Text className="text-blue-600 px-4 font-semibold" onPress={confirmAuth}>
+              Aceptar
+            </Text>
           </View>
         </View>
-      </Modal>
-    </View>
-  );
+      </View>
+    </Modal>
+  </View>
+);
+
+
+
 }

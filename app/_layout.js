@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { LayoutContext } from '../context/LayoutContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StatusBar } from 'expo-status-bar';
 
 export default function Layout() {
   const router = useRouter();
@@ -38,8 +39,9 @@ export default function Layout() {
     }
   }, [loading, isLoggedIn, segments]);
 
-   return (
+  return (
     <LayoutContext.Provider value={{ setAuthKey }}>
+      <StatusBar style="light" />
       {loading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" />
