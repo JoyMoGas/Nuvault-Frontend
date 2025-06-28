@@ -1,7 +1,18 @@
-import { useState } from 'react';
-import { View, Text, TextInput, Pressable, Alert, Switch } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Alert,
+  Modal,
+  FlatList,
+  TouchableOpacity,
+  ScrollView
+} from 'react-native';
 import api from '../services/api';
 import { useRouter } from 'expo-router';
+import { AntDesign, Feather } from '@expo/vector-icons';
 
 export default function AddPassword() {
   const router = useRouter();
@@ -9,82 +20,268 @@ export default function AddPassword() {
   const [service, setService] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [categoryId, setCategoryId] = useState(null);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [tagsList, setTagsList] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [focusedField, setFocusedField] = useState('');
+
+  // Fetch categories and types (tags)
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const catRes = await api.get('/tags/categories');
+      setCategoriesList(catRes.data);
+
+      const tagsRes = await api.get('/tags/types');
+      setTagsList(tagsRes.data);
+    } catch (error) {
+      console.error("Error al cargar datos:", error);
+    }
+  };
+  fetchData();
+}, []);
+
+
+  const toggleTag = (tagId) => {
+    if (selectedTags.includes(tagId)) {
+      setSelectedTags(selectedTags.filter((id) => id !== tagId));
+    } else {
+      setSelectedTags([...selectedTags, tagId]);
+    }
+  };
 
   const addPassword = async () => {
-  if (!service || !username || !password) {
-    Alert.alert('Error', 'Llena todos los campos');
-    return;
-  }
-  try {
-    const res = await api.post('/add-password', {
-      service,
-      username,
-      password,
-      is_favorite: isFavorite,
-    });
-    Alert.alert('Éxito', res.data.message);
-    router.back();
-  } catch (e) {
-    // Aquí capturamos el error específico de conflicto
-    if (e.response && e.response.status === 409) {
-      Alert.alert('Error', e.response.data.message || 'Ya existe una contraseña para este servicio');
-    } else if (e.response && e.response.data && e.response.data.message) {
-      Alert.alert('Error', e.response.data.message);
-    } else {
-      Alert.alert('Error', 'No se pudo agregar la contraseña');
+    if (!service || !username || !password || !categoryId) {
+      Alert.alert('Error', 'Llena todos los campos requeridos');
+      return;
     }
-  }
-};
 
+    try {
+      const res = await api.post('/add-password', {
+        service,
+        username,
+        password,
+        category_id: categoryId,
+        type_id: selectedTags,
+        is_favorite: isFavorite
+      });
+      Alert.alert('Éxito', res.data.message);
+      router.back();
+    } catch (e) {
+      if (e.response?.status === 409) {
+        setErrorMsg(e.response.data.message);
+      } else {
+        Alert.alert('Error', 'No se pudo agregar la contraseña');
+      }
+    }
+  };
 
   return (
-    <View className="flex-1 px-6 pt-4">
-      <Text className="text-2xl font-bold mb-4">Añadir Contraseña</Text>
+    <ScrollView className="flex-1 px-6 pt-4 bg-white">
+      {/* Botón de regreso */}
+      <Pressable
+        onPress={() => router.back()}
+        className="absolute left-4 top-10 z-10 bg-yellow-400 rounded-full p-2"
+      >
+        <AntDesign name="arrowleft" size={24} color="white" />
+      </Pressable>
 
-      <Text>Servicio:</Text>
+      <Text className="text-3xl font-bold text-center mt-14 mb-6">Create New</Text>
+
+      {/* Sección: Credentials */}
+      <Text className="text-xl font-bold mb-2">Credentials</Text>
+
+      {/* Select Category */}
+      <Text className="text-gray-500 mb-1">Select Categories</Text>
+      <Pressable
+        onPress={() => setModalVisible('category')}
+        className="bg-white border rounded-xl px-4 py-3 mb-4 shadow-md"
+        style={{
+          borderColor: focusedField === 'category' ? '#facc15' : '#d1d5db',
+          borderWidth: 1.5
+        }}
+      >
+        <Text>
+          {categoryId
+            ? categoriesList.find((c) => c.category_id === categoryId)?.category_name
+            : 'Select'}
+        </Text>
+      </Pressable>
+
+      {/* Modal Categorías */}
+      <Modal visible={modalVisible === 'category'} animationType="slide">
+        <View className="flex-1 px-6 pt-10 bg-white">
+          <Text className="text-lg font-bold mb-4">Select Category</Text>
+
+          <FlatList
+            data={categoriesList}
+            keyExtractor={(item) => item.category_id?.toString()}
+            ListEmptyComponent={
+              <Text className="text-gray-500 text-center mt-10">No categories found</Text>
+            }
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => setCategoryId(item.category_id)}
+                className="py-3 border-b flex-row justify-between"
+              >
+                <Text>{item.category_name}</Text>
+                {categoryId === item.category_id && (
+                  <AntDesign name="checkcircle" size={20} color="green" />
+                )}
+              </TouchableOpacity>
+            )}
+          />
+
+          {/* Botón Done */}
+          <Pressable
+            onPress={() => setModalVisible(false)}
+            className="mt-6 bg-yellow-400 py-3 rounded-xl"
+          >
+            <Text className="text-center font-bold text-black">Done</Text>
+          </Pressable>
+        </View>
+      </Modal>
+
+      {/* Service Name */}
+      <Text className="text-gray-500 mb-1">Service Name</Text>
       <TextInput
         value={service}
-        onChangeText={setService}
-        className="border p-2 mb-4 rounded"
+        onChangeText={(text) => {
+          setService(text);
+          setErrorMsg('');
+        }}
+        onFocus={() => setFocusedField('service')}
+        onBlur={() => setFocusedField('')}
+        className="bg-white rounded-xl px-4 py-3 mb-1 shadow-md"
+        placeholder="Service"
+        style={{
+          borderWidth: 1.5,
+          borderColor: focusedField === 'service' ? '#facc15' : '#d1d5db'
+        }}
       />
+      {errorMsg ? <Text className="text-red-500 mb-2">{errorMsg}</Text> : <View className="mb-4" />}
 
-      <Text>Usuario:</Text>
+      {/* Email Address */}
+      <Text className="text-gray-500 mb-1">Email Address</Text>
       <TextInput
         value={username}
         onChangeText={setUsername}
-        className="border p-2 mb-4 rounded"
+        onFocus={() => setFocusedField('email')}
+        onBlur={() => setFocusedField('')}
+        className="bg-white rounded-xl px-4 py-3 mb-4 shadow-md"
+        placeholder="example@test.com"
+        style={{
+          borderWidth: 1.5,
+          borderColor: focusedField === 'email' ? '#facc15' : '#d1d5db'
+        }}
       />
 
-      <Text>Contraseña:</Text>
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry={true}
-        className="border p-2 mb-4 rounded"
-      />
-
-      <View className="flex-row items-center mb-4">
-        <Text className="mr-2">Favorito:</Text>
-        <Switch
-          value={isFavorite}
-          onValueChange={setIsFavorite}
+      {/* Password */}
+      <Text className="text-gray-500 mb-1">Password</Text>
+      <View
+        className="flex-row items-center justify-between bg-white rounded-xl px-4 py-3 mb-6 shadow-md"
+        style={{
+          borderWidth: 1.5,
+          borderColor: focusedField === 'password' ? '#facc15' : '#d1d5db'
+        }}
+      >
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!isPasswordVisible}
+          onFocus={() => setFocusedField('password')}
+          onBlur={() => setFocusedField('')}
+          className="flex-1"
+          placeholder="•••••••••••"
         />
+        <Pressable onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+          <Text className="text-yellow-500 font-bold">
+            {isPasswordVisible ? 'Hide' : 'View'}
+          </Text>
+        </Pressable>
       </View>
 
+      {/* Favorite toggle */}
       <Pressable
-        onPress={addPassword}
-        className="bg-blue-600 py-3 rounded mb-4"
+        onPress={() => setIsFavorite(!isFavorite)}
+        className="flex-row items-center mb-6"
       >
-        <Text className="text-white text-center">Guardar</Text>
+        <View
+          className={`w-6 h-6 border rounded-md items-center justify-center mr-3 ${
+            isFavorite ? 'border-yellow-400' : 'border-gray-400'
+          }`}
+        >
+          {isFavorite ? (
+            <AntDesign name="star" size={18} color="#facc15" />
+          ) : null}
+        </View>
+        <Text className="text-base text-gray-700">Add to favorites</Text>
       </Pressable>
 
+      {/* Tags */}
+      <Text className="text-xl font-bold mb-2">Tags</Text>
+      <View className="bg-white border border-gray-200 rounded-xl p-3 mb-6 shadow-md">
+        <View className="flex-row flex-wrap gap-2">
+          {selectedTags.map((id) => {
+            const tag = tagsList.find((t) => t.type_id === id);
+            return (
+              <View
+                key={id}
+                className="bg-yellow-400 px-3 py-1 rounded-full"
+              >
+                <Text className="text-sm">{tag?.type_name}</Text>
+              </View>
+            );
+          })}
+          <Pressable
+            onPress={() => setModalVisible('tags')}
+            className="bg-gray-400 px-3 py-1 rounded-full"
+          >
+            <Text className="text-sm text-white">Add +</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Modal Tags */}
+      <Modal visible={modalVisible === 'tags'} animationType="slide">
+        <View className="flex-1 px-6 pt-10 bg-white">
+          <Text className="text-lg font-bold mb-4">Select Tags</Text>
+          <FlatList
+            data={tagsList}
+            keyExtractor={(item) => item.type_id.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => toggleTag(item.type_id)}
+                className="py-3 border-b flex-row justify-between"
+              >
+                <Text>{item.type_name}</Text>
+                {selectedTags.includes(item.type_id) && (
+                  <AntDesign name="checkcircle" size={20} color="green" />
+                )}
+              </TouchableOpacity>
+            )}
+          />
+          <Pressable
+            onPress={() => setModalVisible(false)}
+            className="mt-6 bg-yellow-400 py-3 rounded-xl"
+          >
+            <Text className="text-center font-bold text-black">Done</Text>
+          </Pressable>
+        </View>
+      </Modal>
+
+      {/* Guardar */}
       <Pressable
-        onPress={() => router.back()}
-        className="bg-gray-600 py-3 rounded"
+        onPress={addPassword}
+        className="bg-yellow-400 py-3 rounded-xl mb-10"
       >
-        <Text className="text-white text-center">Regresar</Text>
+        <Text className="text-center font-bold text-black">Add New Password</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }

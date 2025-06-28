@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useRef } from 'react';
 import {
   View, Text, FlatList, ActivityIndicator,
   Alert, ToastAndroid, Platform, Modal, TextInput, TouchableOpacity, ImageBackground
@@ -18,6 +18,10 @@ import ScoreBar from '../components/health_score/ScoreBar';
 import SearchBar from '../components/SearchBar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { Animated } from 'react-native';
+import { CheckIcon, CopyIcon } from '../components/Icons';
+import { StyleSheet } from 'react-native';
+import SettingsButton from '../components/buttons/SettingsButton';
 
 export default function HomeScreen() {
   const [passwords, setPasswords] = useState([]);
@@ -30,8 +34,33 @@ export default function HomeScreen() {
   const [showPwdInput, setShowPwdInput] = useState(false);
   const [healthScore, setHealthScore] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCopied, setShowCopied] = useState(false);
+  const copiedAnim = useRef(new Animated.Value(0)).current;
+  const [username, setUsername] = useState('');
+
+  const triggerCopiedOverlay = () => {
+    setShowCopied(true);
+    copiedAnim.setValue(0);
+
+    Animated.timing(copiedAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(() => {
+        Animated.timing(copiedAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowCopied(false);
+        });
+      }, 1000);
+    });
+  };
 
   const router = useRouter();    
+
 
   const fetchPasswords = async (filter) => {
     setLoading(true);
@@ -148,6 +177,26 @@ export default function HomeScreen() {
   Oldest: 'Oldest Records',
 };
 
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const res = await api.get('/user-info', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.data?.username) {
+          setUsername(res.data.username);
+        }
+      } catch (err) {
+        console.log('Error al obtener usuario:', err);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
+
   return (
     <View className="flex-1 bg-white relative">
       <FlatList
@@ -176,7 +225,7 @@ export default function HomeScreen() {
                   <View
                     style={{
                       position: 'absolute',
-                      zIndex: 999,
+                      zIndex: 20,
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
@@ -213,6 +262,18 @@ export default function HomeScreen() {
                 <View style={{ position: 'absolute', bottom: 60, right: 20, zIndex: 30 }}>
                   <GenerateButton />
                 </View>
+
+                <View style={{ position: 'absolute', top: 60, right: 20, zIndex: 30 }}>
+                  <SettingsButton />
+                </View>
+
+                <View style={{ position: 'absolute', top: 60, left: 20, zIndex: 30 }}>
+                  <Text className='text-white font-bold text-lg'>
+                    {username || 'Usuario'}
+                  </Text>
+                  <Text className='text-white'>Welcome back again!</Text>
+                </View>
+
               </ImageBackground>
             </View>
 
@@ -227,16 +288,11 @@ export default function HomeScreen() {
                 marginTop: -40,
                 marginBottom: 20,
                 zIndex: 50,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: -3 },
-                shadowOpacity: 0.1,
-                shadowRadius: 6,
-                elevation: 5,
               }}
             >
               <SearchBar value={searchQuery} onChange={setSearchQuery} />
               <FilterButtons activeFilter={activeFilter} onChange={setActiveFilter} />
-              <Text className="text-3xl font-bold mb-4">
+              <Text className="text-3xl font-bold mb-1 mt-2">
                 {FILTER_TITLES[activeFilter] || 'Your Vaults'}
               </Text>
             </View>
@@ -248,7 +304,10 @@ export default function HomeScreen() {
             visible={visiblePasswords[item.pass_id]}
             onToggleVisibility={toggleVisibility}
             onToggleFavorite={toggleFavorite}
-            onCopy={copyToClipboard}
+            onCopy={async (password) => {
+              await copyToClipboard(password)
+              triggerCopiedOverlay()
+            }}
             onEdit={(id) => openAuthModal('edit', id)}
             onDelete={(id) => openAuthModal('delete', id)}
           />
@@ -308,6 +367,25 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
+      {showCopied && (
+        <Animated.View 
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: 'rgba(255,255,255,0.85)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: copiedAnim,
+            zIndex: 999,
+          }}
+          pointerEvents="none"
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
+          <Text className="font-bold" style={{ color: '#10B981', fontSize: 40 }}>Copied</Text>
+          <CheckIcon />
+        </View>
+
+        </Animated.View>
+      )}
     </View>
   );
 }

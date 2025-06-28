@@ -21,8 +21,8 @@ export default function LogoutButton() {
   };
 
   return (
-    <Pressable className="bg-blue-600 py-3 rounded mt-4" onPress={handleLogOut}>
-      <Text className="text-white text-lg text-center">Cerrar Sesión</Text>
+    <Pressable onPress={handleLogOut}>
+      <Text className="text-black font-bold text-base text-center">Log Out</Text>
     </Pressable>
   );
 }

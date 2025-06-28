@@ -5,6 +5,7 @@ import Octicons from '@expo/vector-icons/Octicons';
 import Feather from '@expo/vector-icons/Feather';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 export const AddIcon = (props) => (
   <FontAwesome6 name="plus" size={36} color={"white"} {...props} />
@@ -50,4 +51,20 @@ export const EditIcon = (props) => (
 
 export const DeleteIcon = (props) => (
   <Ionicons name="trash-outline" size={24} color="black" {...props} />
+);
+
+export const CheckIcon = (props) => (
+  <FontAwesome6 name="check" size={46} color="#10B981" {...props} />
+);
+
+export const SettingsIcon = (props) => (
+  <Ionicons name="options" size={26} color="white" {...props} />
+);
+
+export const VerifiedIcon = (props) => (
+  <MaterialIcons name="verified-user" size={18} color="green" />
+);
+
+export const RegenerateIcon = (props) => (
+  <MaterialCommunityIcons name="restart" size={24} color="black" />
 );

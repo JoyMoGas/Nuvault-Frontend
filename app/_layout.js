@@ -6,6 +6,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { LayoutContext } from '../context/LayoutContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
+import api from '../services/api';
 
 export default function Layout() {
   const router = useRouter();
@@ -16,10 +17,17 @@ export default function Layout() {
   const [authKey, setAuthKey] = useState(0);
 
   const checkAuth = async () => {
-    const token = await AsyncStorage.getItem('token');
-    setIsLoggedIn(!!token);
+  try {
+    await api.get('/validate-token'); // Esto ya incluye el token en headers automáticamente
+    setIsLoggedIn(true);
+  } catch (err) {
+    await AsyncStorage.removeItem('token');
+    setIsLoggedIn(false);
+  } finally {
     setLoading(false);
-  };
+  }
+};
+
 
   useEffect(() => {
     checkAuth();
