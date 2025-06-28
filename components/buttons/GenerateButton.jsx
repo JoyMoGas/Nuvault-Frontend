@@ -1,5 +1,7 @@
-import { Pressable, Text } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { GenerateIcon, KeyIcon } from '../Icons';
+
 
 export default function GenerateButton() {
   const router = useRouter();
@@ -7,12 +9,15 @@ export default function GenerateButton() {
   return (
     <Pressable
       onPress={() => router.push('/generate-password')}
-      className= "py-3 px-4 rounded-xl w-40 mr-2"
+      className="py-2 px-4 rounded-xl w-30 mr-2 items-center"
       style={{
         backgroundColor: '#FFD400'
       }}
     >
-      <Text className="text-black text-center">Generate</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+        <Text className="text-black font-bold text-center mr-2">Generate</Text>
+        <GenerateIcon />
+      </View>
     </Pressable>
   );
 }

@@ -15,7 +15,9 @@ import AddButton from '../components/buttons/AddButton';
 import LogoutButton from '../components/buttons/LogoutButton';
 import HealthScore from '../components/health_score/HealthScore';
 import ScoreBar from '../components/health_score/ScoreBar';
+import SearchBar from '../components/SearchBar';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
   const [passwords, setPasswords] = useState([]);
@@ -27,6 +29,9 @@ export default function HomeScreen() {
   const [pwdInput, setPwdInput] = useState('');
   const [showPwdInput, setShowPwdInput] = useState(false);
   const [healthScore, setHealthScore] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const router = useRouter();    
 
   const fetchPasswords = async (filter) => {
     setLoading(true);
@@ -88,7 +93,7 @@ export default function HomeScreen() {
 
   const copyToClipboard = async (password) => {
     if (!password || password === '********') {
-      Alert.alert('Error', 'No hay contraseña para copiar');
+      Alert.alert('Error', 'There is no password to copy');
       return;
     }
     await Clipboard.setStringAsync(password);
@@ -108,12 +113,13 @@ export default function HomeScreen() {
       const token = await AsyncStorage.getItem('token');
       await api.post(
         '/verify-passwords-access',
-        { user_password: pwdInput },
+        { user_password: pwdInput.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+
       if (modalAuth.action === 'edit') {
-        router.push({ pathname: '/edit-password', params: { pass_id: modalAuth.passId } });
+        router.push(`/edit-password?pass_id=${modalAuth.passId}`);
       } else if (modalAuth.action === 'delete') {
         await api.delete(`/delete-password/${modalAuth.passId}`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -129,176 +135,179 @@ export default function HomeScreen() {
       Alert.alert('Error', 'Contraseña inválida');
     }
   };
+  const query = searchQuery.trim().toLowerCase();
+    const filteredPasswords = passwords.filter(p =>
+    p.service?.toLowerCase().includes(query) ||
+    p.username?.toLowerCase().includes(query)
+  );
+
+  const FILTER_TITLES = {
+  All: 'All Vaults',
+  Favorites: 'Favorite Vaults',
+  Recent: 'Recently Accessed',
+  Oldest: 'Oldest Records',
+};
 
   return (
-  <View className="flex-1 bg-white relative">
-    <FlatList
-      data={passwords}
-      keyExtractor={(item) => item.pass_id}
-      ListHeaderComponent={
-        <>
-          {/* Fondo con imagen + Score + botón */}
-          <View style={{ zIndex: 5 }}>
-            <ImageBackground
-              source={require('../assets/fondo.png')}
-              resizeMode="cover"
-              style={{
-                paddingTop: 80,
-                paddingBottom: 60,
-                paddingHorizontal: 16,
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-              }}
-            >
-              {/* ScoreBar con HealthScore centrado */}
-              <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center', marginTop: 40, marginBottom: 30 }}>
-                <View style={{ zIndex: 10 }}>
-                  <ScoreBar score={healthScore} />
+    <View className="flex-1 bg-white relative">
+      <FlatList
+        data={filteredPasswords}
+        keyExtractor={(item) => item.pass_id}
+        ListHeaderComponent={
+          <>
+            {/* Fondo con imagen + Score + botón */}
+            <View style={{ zIndex: 5 }}>
+              <ImageBackground
+                source={require('../assets/fondo.png')}
+                resizeMode="cover"
+                style={{
+                  paddingTop: 80,
+                  paddingBottom: 60,
+                  paddingHorizontal: 16,
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                }}
+              >
+                {/* ScoreBar con HealthScore centrado */}
+                <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center', marginTop: 40, marginBottom: 30 }}>
+                  <View style={{ zIndex: 10 }}>
+                    <ScoreBar score={healthScore} />
+                  </View>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      zIndex: 999,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <HealthScore score={healthScore} />
+                  </View>
                 </View>
+
+                {/* Difuminado gris */}
                 <View
                   style={{
                     position: 'absolute',
-                    zIndex: 999, // Muy por encima del difuminado y de ScoreBar
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    bottom: 40,
+                    left: 0,
+                    right: 0,
+                    height: 200,
+                    zIndex: 15,
                   }}
+                  pointerEvents="none"
                 >
-                  <HealthScore score={healthScore} />
+                  <LinearGradient
+                    colors={[
+                      'rgba(46,46,46,0.95)',
+                      'rgba(46,46,46,0.8)',
+                      'rgba(46,46,46,0.6)',
+                      'transparent',
+                    ]}
+                    start={{ x: 0.5, y: 1 }}
+                    end={{ x: 0.5, y: 0 }}
+                    style={{ flex: 1 }}
+                  />
                 </View>
-              </View>
 
+                <View style={{ position: 'absolute', bottom: 60, right: 20, zIndex: 30 }}>
+                  <GenerateButton />
+                </View>
+              </ImageBackground>
+            </View>
 
-              {/* Difuminado gris encima de HealthBar pero debajo de HealthScore */}
-              <View
-                style={{
-                  position: 'absolute',
-                  bottom: 40,
-                  left: 0,
-                  right: 0,
-                  height: 200,
-                  zIndex: 15,
-                }}
-                pointerEvents="none"
-              >
-                <LinearGradient
-                  colors={[
-                    'rgba(46,46,46,0.95)',
-                    'rgba(46,46,46,0.8)',
-                    'rgba(46,46,46,0.6)',
-                    'transparent',
-                  ]}
-                  start={{ x: 0.5, y: 1 }}
-                  end={{ x: 0.5, y: 0 }}
-                  style={{ flex: 1 }}
-                />
-              </View>
-
-              {/* Botón Generar dentro de la imagen, más arriba */}
-              <View style={{ position: 'absolute', bottom: 60, right: 20, zIndex: 30 }}>
-                <GenerateButton />
-              </View>
-            </ImageBackground>
-          </View>
-
-          {/* Card blanca con border radius */}
-          <View
-            style={{
-              backgroundColor: '#ffffff',
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              paddingHorizontal: 16,
-              paddingTop: 24,
-              marginTop: -40,
-              marginBottom: 20,
-              zIndex: 50,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: -3 },
-              shadowOpacity: 0.1,
-              shadowRadius: 6,
-              elevation: 5,
-            }}
-          >
-            <FilterButtons activeFilter={activeFilter} onChange={setActiveFilter} />
-            <Text className="text-3xl font-bold mb-8">Your Vaults</Text>
-          </View>
-        </>
-      }
-      renderItem={({ item }) => (
-        <PasswordCard
-          item={item}
-          visible={visiblePasswords[item.pass_id]}
-          onToggleVisibility={toggleVisibility}
-          onToggleFavorite={toggleFavorite}
-          onCopy={copyToClipboard}
-          onEdit={(id) => openAuthModal('edit', id)}
-          onDelete={(id) => openAuthModal('delete', id)}
-        />
-      )}
-      ListFooterComponent={<View style={{ height: 100 }} />}
-      ListEmptyComponent={
-        loading ? (
-          <ActivityIndicator size="large" style={{ marginTop: 20 }} />
-        ) : error ? (
-          <Text className="text-red-600 text-center mt-4">{error}</Text>
-        ) : (
-          <Text className="text-center mt-4 text-gray-500">No hay contraseñas guardadas</Text>
-        )
-      }
-    />
-
-    {/* Botón flotante redondo para Añadir */}
-    <View
-      style={{
-        position: 'absolute',
-        bottom: 24,
-        right: 24,
-        zIndex: 50,
-      }}
-    >
-      <AddButton round />
-    </View>
-
-    <LogoutButton />
-
-    {/* Modal para autenticación */}
-    <Modal visible={modalAuth.visible} transparent animationType="fade">
-      <View className="flex-1 justify-center items-center bg-black bg-opacity-50 p-4">
-        <View className="bg-white w-full p-4 rounded">
-          <Text className="text-lg mb-2 font-semibold">Introduce tu contraseña</Text>
-          <View className="relative mb-4">
-            <TextInput
-              value={pwdInput}
-              onChangeText={setPwdInput}
-              secureTextEntry={!showPwdInput}
-              placeholder="••••••••"
-              className="border p-3 pr-16 rounded"
-            />
-            <TouchableOpacity
-              onPress={() => setShowPwdInput(!showPwdInput)}
-              className="absolute right-3 top-3"
+            {/* Card blanca */}
+            <View
+              style={{
+                backgroundColor: '#ffffff',
+                borderTopLeftRadius: 48,
+                borderTopRightRadius: 48,
+                paddingHorizontal: 16,
+                paddingTop: 24,
+                marginTop: -40,
+                marginBottom: 20,
+                zIndex: 50,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: -3 },
+                shadowOpacity: 0.1,
+                shadowRadius: 6,
+                elevation: 5,
+              }}
             >
-              <Text className="text-blue-600 font-semibold">
-                {showPwdInput ? 'Ocultar' : 'Mostrar'}
+              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+              <FilterButtons activeFilter={activeFilter} onChange={setActiveFilter} />
+              <Text className="text-3xl font-bold mb-4">
+                {FILTER_TITLES[activeFilter] || 'Your Vaults'}
               </Text>
-            </TouchableOpacity>
-          </View>
-          <View className="flex-row justify-end">
-            <Text
-              className="text-gray-600 px-4"
-              onPress={() => setModalAuth({ visible: false })}
-            >
-              Cancelar
-            </Text>
-            <Text className="text-blue-600 px-4 font-semibold" onPress={confirmAuth}>
-              Aceptar
-            </Text>
+            </View>
+          </>
+        }
+        renderItem={({ item }) => (
+          <PasswordCard
+            item={item}
+            visible={visiblePasswords[item.pass_id]}
+            onToggleVisibility={toggleVisibility}
+            onToggleFavorite={toggleFavorite}
+            onCopy={copyToClipboard}
+            onEdit={(id) => openAuthModal('edit', id)}
+            onDelete={(id) => openAuthModal('delete', id)}
+          />
+        )}
+        ListFooterComponent={<View style={{ height: 100 }} />}
+        ListEmptyComponent={
+          loading ? (
+            <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+          ) : error ? (
+            <Text className="text-red-600 text-center mt-4">{error}</Text>
+          ) : (
+            <Text className="text-center mt-4 text-gray-500">There are no saved passwords</Text>
+          )
+        }
+      />
+
+      <View style={{ position: 'absolute', bottom: 24, right: 24, zIndex: 50 }}>
+        <AddButton round />
+      </View>
+
+
+      <Modal visible={modalAuth.visible} transparent animationType="fade">
+        <View className="flex-1 justify-center items-center bg-black bg-opacity-50 p-4">
+          <View className="bg-white w-full p-4 rounded">
+            <Text className="text-lg mb-2 font-semibold">Introduce tu contraseña</Text>
+            <View className="relative mb-4">
+              <TextInput
+                value={pwdInput}
+                onChangeText={setPwdInput}
+                secureTextEntry={!showPwdInput}
+                placeholder="••••••••"
+                className="border p-3 pr-16 rounded"
+                keyboardType="default"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPwdInput(!showPwdInput)}
+                className="absolute right-3 top-3"
+              >
+                <Text className="text-blue-600 font-semibold">
+                  {showPwdInput ? 'Ocultar' : 'Mostrar'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View className="flex-row justify-end">
+              <Text
+                className="text-gray-600 px-4"
+                onPress={() => setModalAuth({ visible: false })}
+              >
+                Cancelar
+              </Text>
+              <Text className="text-blue-600 px-4 font-semibold" onPress={confirmAuth}>
+                Aceptar
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-    </Modal>
-  </View>
-);
-
-
-
+      </Modal>
+    </View>
+  );
 }

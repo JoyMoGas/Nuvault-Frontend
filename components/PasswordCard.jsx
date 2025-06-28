@@ -1,24 +1,37 @@
 import { View, Text, Pressable } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
+import { CopyIcon, DeleteIcon, EditIcon, FavoriteIcon, HideIcon, ShowIcon } from './Icons';
 
-export default function PasswordCard({ item, visible, onToggleVisibility, onToggleFavorite, onCopy, onEdit, onDelete }) {
+export default function PasswordCard({
+  item,
+  visible,
+  onToggleVisibility,
+  onToggleFavorite,
+  onCopy,
+  onEdit,
+  onDelete,
+  IconComponent, // <-- aquí pasamos el icono que queremos mostrar en el recuadro gris
+}) {
   return (
     <Swipeable
       renderRightActions={() => (
-        <View className="flex-row h-full items-center">
+        <View className="flex-row h-full items-center space-x-2 mr-7">
           <Pressable
             onPress={() => onEdit(item.pass_id)}
-            className="bg-yellow-500 justify-center items-center px-4"
+            style={{ backgroundColor: '#808080', height: 48, width: 48 }}
+            className="justify-center items-center rounded-full"
           >
-            <Text>Editar</Text>
+            <EditIcon />
           </Pressable>
           <Pressable
             onPress={() => onDelete(item.pass_id)}
-            className="bg-red-600 justify-center items-center px-4"
+            style={{ backgroundColor: '#FFD400', height: 48, width: 48 }}
+            className="justify-center items-center rounded-full"
           >
-            <Text className="text-white">Eliminar</Text>
+            <DeleteIcon />
           </Pressable>
         </View>
+
       )}
     >
       <View className="px-5 mb-2">
@@ -28,7 +41,8 @@ export default function PasswordCard({ item, visible, onToggleVisibility, onTogg
             justifyContent: 'space-between',
             alignItems: 'center',
             backgroundColor: '#fff',
-            padding: 16,
+            paddingHorizontal: 16,
+            paddingVertical: 10,
             borderRadius: 16,
             borderWidth: 0.5,
             borderColor: '#e5e7eb',
@@ -38,6 +52,22 @@ export default function PasswordCard({ item, visible, onToggleVisibility, onTogg
             elevation: 5,
           }}
         >
+          {/* Recuadro gris con icono a la izquierda */}
+          <View
+            style={{
+              width: 66,
+              height: 66,
+              backgroundColor: '#F5F5F5', // gris claro
+              borderRadius: 20,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 16,
+            }}
+          >
+            {/* Aquí renderizamos el icono recibido, si no se pasa ninguno puede ir un placeholder */}
+            {IconComponent ? <IconComponent /> : null}
+          </View>
+
           {/* Bloque de texto apilado vertical */}
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#000' }}>
@@ -48,60 +78,40 @@ export default function PasswordCard({ item, visible, onToggleVisibility, onTogg
             </Text>
 
             {/* Password y botón Ver/Ocultar en fila */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-              <Text style={{ color: '#808080', flexShrink: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+              <Text
+                style={{ color: '#808080', flexShrink: 1, fontWeight: 'bold', fontSize: visible ? 15 : 20, }}
+              >
                 {visible ? item.password : '********'}
               </Text>
               <Pressable
                 onPress={() => onToggleVisibility(item.pass_id)}
                 style={{
-                  backgroundColor: '#FFD400',
                   paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  borderRadius: 12,
-                  marginLeft: 8,
-                  minWidth: 50,
-                  alignItems: 'center',
                 }}
               >
-                <Text style={{ color: '#000', fontWeight: '600', fontSize: 12 }}>
-                  {visible ? 'Ocultar' : 'Ver'}
-                </Text>
+                {visible ? <HideIcon /> : <ShowIcon />}
               </Pressable>
             </View>
           </View>
 
           {/* Botones a la derecha, en fila */}
-          <View style={{ marginLeft: 12, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-            <Pressable
-              onPress={() => onCopy(item.password)}
-              style={{
-                backgroundColor: '#3B82F6',
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                borderRadius: 12,
-                minWidth: 80,
-                marginRight: 8,
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ color: '#fff', fontWeight: '600' }}>Copiar</Text>
+          <View style={{ marginLeft: 3, flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={() => onCopy(item.password)}>
+              <CopyIcon />
             </Pressable>
 
             <Pressable
               onPress={() => onToggleFavorite(item.pass_id)}
               style={{
-                backgroundColor: item.is_favorite ? '#DC2626' : '#9CA3AF',
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                borderRadius: 12,
-                minWidth: 80,
-                alignItems: 'center',
+                paddingLeft: 15,
               }}
             >
-              <Text style={{ color: '#fff' }}>
-                {item.is_favorite ? '❤️' : '♡'}
-              </Text>
+              {item.is_favorite ? (
+                <FavoriteIcon color="#FF4C29" />
+              ) : (
+                <FavoriteIcon color="#D0D0D0" />
+              )}
             </Pressable>
           </View>
         </View>
