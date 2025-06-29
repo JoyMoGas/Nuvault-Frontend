@@ -66,5 +66,61 @@ export const VerifiedIcon = (props) => (
 );
 
 export const RegenerateIcon = (props) => (
-  <MaterialCommunityIcons name="restart" size={24} color="black" />
+  <MaterialCommunityIcons name="restart" size={24} color="#808080" />
+);
+
+export const BrowserIcon = (props) => (
+  <MaterialCommunityIcons name="web" size={38} color="#808080" {...props} />
+);
+
+export const MobileIcon = (props) => (
+  <AntDesign name="mobile1" size={38} color="#808080" {...props} />
+);
+
+export const SocialMediaIcon = (props) => (
+  <FontAwesome name="slideshare" size={38} color="#808080" {...props} />
+);
+
+export const EmailIcon = (props) => (
+  <MaterialCommunityIcons name="email-outline" size={38} color="#808080" {...props} />
+);
+
+export const BankIcon = (props) => (
+  <MaterialCommunityIcons name="finance" size={38} color="#808080" {...props} />
+);
+
+export const WorkIcon = (props) => (
+  <MaterialIcons name="work-outline" size={38} color="#808080" {...props} />
+);
+
+export const ShoppingIcon = (props) => (
+  <MaterialCommunityIcons name="shopping-outline" size={38} color="#808080" {...props} />
+);
+
+export const GamingIcon = (props) => (
+  <MaterialCommunityIcons name="gamepad-variant-outline" size={38} color="#808080" {...props} />
+);
+
+export const MediaIcon = (props) => (
+  <MaterialIcons name="ondemand-video" size={38} color="#808080" {...props} />
+);
+
+export const BillIcon = (props) => (
+  <MaterialIcons name="payment" size={38} color="#808080" {...props} />
+);
+
+export const EducationIcon = (props) => (
+  <MaterialCommunityIcons name="book-education-outline" size={38} color="#808080" {...props} />
+);
+
+export const OtherIcon = (props) => (
+  <MaterialIcons name="password" size={38} color="#808080" {...props} />
+);
+
+export const ErrorIcon = (props) => (
+  <Ionicons name="alert-circle-outline" size={72} color="#FFA500" />
+);
+
+export const WorkingIcon = (props) => (
+  <Ionicons name="construct" size={24} color="#808080" {...props} />
 );

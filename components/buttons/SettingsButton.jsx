@@ -10,6 +10,7 @@ import {
 import { SettingsIcon } from '../Icons';
 import { Feather } from '@expo/vector-icons';
 import LogoutButton from './LogoutButton';
+import NotAvailableButton from './NotAvailable';
 
 export default function SettingsButton({ onLogout, onSettings }) {
   const [showMenu, setShowMenu] = useState(false);
@@ -69,7 +70,10 @@ export default function SettingsButton({ onLogout, onSettings }) {
               }}
             >
               <Feather name="settings" size={18} color="#000" style={styles.menuIcon} />
-              <Text style={styles.menuItemText}>Settings</Text>
+              <NotAvailableButton>
+                <Text style={styles.menuItemText}>Settings</Text>
+              </NotAvailableButton>
+              
             </Pressable>
             <Pressable
               style={styles.menuItem}
@@ -80,6 +84,18 @@ export default function SettingsButton({ onLogout, onSettings }) {
             >
               <Feather name="log-out" size={18} color="#000" style={styles.menuIcon} />
               <LogoutButton />
+            </Pressable>
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => {
+                setShowMenu(false);
+                onSettings?.();
+              }}
+            >
+              <Feather name="info" size={18} color="#000" style={styles.menuIcon} />
+              <NotAvailableButton>
+                <Text style={styles.menuItemText}>Help</Text>
+              </NotAvailableButton>
             </Pressable>
           </Animated.View>
         </>

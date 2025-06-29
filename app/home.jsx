@@ -22,6 +22,21 @@ import { Animated } from 'react-native';
 import { CheckIcon, CopyIcon } from '../components/Icons';
 import { StyleSheet } from 'react-native';
 import SettingsButton from '../components/buttons/SettingsButton';
+import {
+  BrowserIcon,
+  MobileIcon,
+  SocialMediaIcon,
+  EmailIcon,
+  BankIcon,
+  WorkIcon,
+  ShoppingIcon,
+  GamingIcon,
+  MediaIcon,
+  BillIcon,
+  EducationIcon,
+  OtherIcon,
+} from '../components/Icons';
+import AuthModal from '../components/AuthModal';
 
 export default function HomeScreen() {
   const [passwords, setPasswords] = useState([]);
@@ -37,6 +52,37 @@ export default function HomeScreen() {
   const [showCopied, setShowCopied] = useState(false);
   const copiedAnim = useRef(new Animated.Value(0)).current;
   const [username, setUsername] = useState('');
+
+  const getCategoryIcon = (categoryName) => {
+  switch (categoryName?.toUpperCase()) {
+    case 'BROWSER':
+      return BrowserIcon;
+    case 'MOBILE APP':
+      return MobileIcon;
+    case 'SOCIAL MEDIA':
+      return SocialMediaIcon;
+    case 'EMAIL':
+      return EmailIcon;
+    case 'BANKING & FINANCE':
+      return BankIcon;
+    case 'WORK / BUSINESS':
+      return WorkIcon;
+    case 'SHOPPING':
+      return ShoppingIcon;
+    case 'GAMING':
+      return GamingIcon;
+    case 'ENTERTAINMENT / MEDIA':
+      return MediaIcon;
+    case 'UTILITIES / BILLS':
+      return BillIcon;
+    case 'EDUCATION':
+      return EducationIcon;
+    case 'OTHER':
+      return OtherIcon;
+    default:
+      return OtherIcon;
+  }
+};
 
   const triggerCopiedOverlay = () => {
     setShowCopied(true);
@@ -196,6 +242,33 @@ export default function HomeScreen() {
     fetchUserInfo();
   }, []);
 
+  const handleAuthConfirm = async (inputPassword, action, passId) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    await api.post(
+      '/verify-passwords-access',
+      { user_password: inputPassword.trim() },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (action === 'edit') {
+      router.push(`/edit-password?pass_id=${passId}`);
+    } else if (action === 'delete') {
+      await api.delete(`/delete-password/${passId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPasswords((prev) => prev.filter((p) => p.pass_id !== passId));
+      Alert.alert('Eliminado', 'Registro eliminado correctamente');
+    }
+
+    setModalAuth({ visible: false, action: null, passId: null });
+    setPwdInput('');
+    setShowPwdInput(false);
+  } catch {
+    Alert.alert('Error', 'Contraseña inválida');
+  }
+};
+
 
   return (
     <View className="flex-1 bg-white relative">
@@ -305,13 +378,16 @@ export default function HomeScreen() {
             onToggleVisibility={toggleVisibility}
             onToggleFavorite={toggleFavorite}
             onCopy={async (password) => {
-              await copyToClipboard(password)
-              triggerCopiedOverlay()
+              await copyToClipboard(password);
+              triggerCopiedOverlay();
             }}
-            onEdit={(id) => openAuthModal('edit', id)}
-            onDelete={(id) => openAuthModal('delete', id)}
+            onEdit={(id) => openAuthModal('edit', id)}     // ← Abre modal de edición
+            onDelete={(id) => openAuthModal('delete', id)} // ← Abre modal de eliminación
+            IconComponent={getCategoryIcon(item.category_name)}
           />
         )}
+
+
         ListFooterComponent={<View style={{ height: 100 }} />}
         ListEmptyComponent={
           loading ? (
@@ -328,45 +404,6 @@ export default function HomeScreen() {
         <AddButton round />
       </View>
 
-
-      <Modal visible={modalAuth.visible} transparent animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-50 p-4">
-          <View className="bg-white w-full p-4 rounded">
-            <Text className="text-lg mb-2 font-semibold">Introduce tu contraseña</Text>
-            <View className="relative mb-4">
-              <TextInput
-                value={pwdInput}
-                onChangeText={setPwdInput}
-                secureTextEntry={!showPwdInput}
-                placeholder="••••••••"
-                className="border p-3 pr-16 rounded"
-                keyboardType="default"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <TouchableOpacity
-                onPress={() => setShowPwdInput(!showPwdInput)}
-                className="absolute right-3 top-3"
-              >
-                <Text className="text-blue-600 font-semibold">
-                  {showPwdInput ? 'Ocultar' : 'Mostrar'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View className="flex-row justify-end">
-              <Text
-                className="text-gray-600 px-4"
-                onPress={() => setModalAuth({ visible: false })}
-              >
-                Cancelar
-              </Text>
-              <Text className="text-blue-600 px-4 font-semibold" onPress={confirmAuth}>
-                Aceptar
-              </Text>
-            </View>
-          </View>
-        </View>
-      </Modal>
       {showCopied && (
         <Animated.View 
           style={{
@@ -386,6 +423,13 @@ export default function HomeScreen() {
 
         </Animated.View>
       )}
+      <AuthModal
+        visible={modalAuth.visible}
+        action={modalAuth.action}
+        onClose={() => setModalAuth({ visible: false })}
+        onConfirm={(password) => handleAuthConfirm(password, modalAuth.action, modalAuth.passId)}
+      />
+
     </View>
   );
 }

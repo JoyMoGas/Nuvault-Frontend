@@ -55,7 +55,7 @@ export default function HealthScore({ score = 0 }) {
           justifyContent: 'center',
         }}
       >
-        <Text className="text-gray-800 text-base mb-1">Health Score</Text>
+        <Text className="text-gray-800 text-base mb-2">Security Status</Text>
         <Text className="text-5xl font-bold text-gray-900">
           {displayedScore}%
         </Text>

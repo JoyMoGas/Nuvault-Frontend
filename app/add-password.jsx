@@ -158,7 +158,7 @@ export default function AddPassword() {
         onFocus={() => setFocusedField('service')}
         onBlur={() => setFocusedField('')}
         className="bg-white rounded-xl px-4 py-3 mb-1 shadow-md"
-        placeholder="Service"
+        placeholder="e.g. Gmail..."
         style={{
           borderWidth: 1.5,
           borderColor: focusedField === 'service' ? '#facc15' : '#d1d5db'
@@ -174,7 +174,7 @@ export default function AddPassword() {
         onFocus={() => setFocusedField('email')}
         onBlur={() => setFocusedField('')}
         className="bg-white rounded-xl px-4 py-3 mb-4 shadow-md"
-        placeholder="example@test.com"
+        placeholder="user@gmail.com"
         style={{
           borderWidth: 1.5,
           borderColor: focusedField === 'email' ? '#facc15' : '#d1d5db'
@@ -184,7 +184,7 @@ export default function AddPassword() {
       {/* Password */}
       <Text className="text-gray-500 mb-1">Password</Text>
       <View
-        className="flex-row items-center justify-between bg-white rounded-xl px-4 py-3 mb-6 shadow-md"
+        className="flex-row items-center justify-between bg-white rounded-xl px-4 py-1 mb-6 shadow-md"
         style={{
           borderWidth: 1.5,
           borderColor: focusedField === 'password' ? '#facc15' : '#d1d5db'
@@ -197,7 +197,7 @@ export default function AddPassword() {
           onFocus={() => setFocusedField('password')}
           onBlur={() => setFocusedField('')}
           className="flex-1"
-          placeholder="•••••••••••"
+          placeholder="***********"
         />
         <Pressable onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
           <Text className="text-yellow-500 font-bold">
