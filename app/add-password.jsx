@@ -140,7 +140,7 @@ export default function AddPassword() {
           {/* Botón Done */}
           <Pressable
             onPress={() => setModalVisible(false)}
-            className="mt-6 bg-yellow-400 py-3 rounded-xl"
+            className="mt-6 mb-20 bg-yellow-400 py-3 rounded-xl"
           >
             <Text className="text-center font-bold text-black">Done</Text>
           </Pressable>
@@ -268,7 +268,7 @@ export default function AddPassword() {
           />
           <Pressable
             onPress={() => setModalVisible(false)}
-            className="mt-6 bg-yellow-400 py-3 rounded-xl"
+            className="mt-6 mb-20 bg-yellow-400 py-3 rounded-xl"
           >
             <Text className="text-center font-bold text-black">Done</Text>
           </Pressable>
