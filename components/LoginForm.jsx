@@ -12,7 +12,6 @@ import { LayoutContext } from '../context/LayoutContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
 import NotAvailableButton from './buttons/NotAvailable';
-import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import Constants from 'expo-constants';
 
@@ -25,20 +24,11 @@ export default function LoginForm({ onTabChange }) {
   const [focusedField, setFocusedField] = useState('');
   const [loading, setLoading] = useState(false);
   const { setAuthKey } = useContext(LayoutContext);
-
-  // Client IDs from app.json
-  const webClientId = Constants.expoConfig.extra.GOOGLE_CLIENT_ID_WEB;
-  const androidClientId = Constants.expoConfig.extra.GOOGLE_CLIENT_ID_ANDROID;
-
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId,
-    webClientId,
-    scopes: ['profile', 'email'],
-    redirectUri: `https://auth.expo.io/@mogasjose/nuvualt-frontend`,
-  });
+  const [errors, setErrors] = useState({});
 
   // Email/password login
   const handleLogin = async () => {
+    setErrors({})
     if (!email || !password) {
       alert('Please enter email and password');
       return;
@@ -52,35 +42,14 @@ export default function LoginForm({ onTabChange }) {
       const token = res.data.token;
       await AsyncStorage.setItem('token', token);
       setAuthKey((prev) => prev + 1);
-    } catch {
-      alert('Invalid credentials');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Google login response
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const idToken = response.authentication?.idToken ?? response.params?.id_token;
-      if (idToken) {
-        loginWithGoogle(idToken);
-      } else {
-        alert('No id_token received from Google');
-      }
-    }
-  }, [response]);
-
-  const loginWithGoogle = async (idToken) => {
-    setLoading(true);
-    try {
-      const res = await api.post('/google-login', { id_token: idToken });
-      const token = res.data.token;
-      await AsyncStorage.setItem('token', token);
-      setAuthKey((prev) => prev + 1);
     } catch (err) {
-      console.error('Google login failed', err);
-      alert('Google login failed');
+      if (err.response?.status === 400 && err.response.data.error === 'user_email') {
+        setErrors((prev) => ({ ...prev, user_email: err.response.data.message }));
+      } else if (err.response?.status === 401 && err.response.data.error === 'user_password') {
+        setErrors((prev) => ({ ...prev, user_password: err.response.data.message }));
+      } else {
+        setErrors({ user_email: 'Invalid credentials' });
+      }
     } finally {
       setLoading(false);
     }
@@ -101,9 +70,12 @@ export default function LoginForm({ onTabChange }) {
         onBlur={() => setFocusedField('')}
         style={{
           borderWidth: 1.5,
-          borderColor: focusedField === 'email' ? '#facc15' : '#d1d5db',
+          borderColor: errors.user_email ? '#dc2626' : focusedField === 'email' ? '#facc15' : '#d1d5db'
         }}
       />
+      {errors.user_email && (
+        <Text style={{ color: '#dc2626', marginBottom: 2 }}>{errors.user_email}</Text>
+      )}
 
       {/* Password */}
       <Text className="text-gray-500 mb-1">Password</Text>
@@ -157,8 +129,6 @@ export default function LoginForm({ onTabChange }) {
           Register
         </Text>
       </Text>
-
-      
     </>
   );
 }

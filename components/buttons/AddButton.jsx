@@ -10,8 +10,8 @@ export default function AddButton() {
       onPress={() => router.push('/add-password')}
       style={{
         backgroundColor: '#FFD400',
-        width: 68,
-        height: 68,
+        width: 60,
+        height: 60,
         borderRadius: 34, // círculo perfecto
         justifyContent: 'center',
         alignItems: 'center',

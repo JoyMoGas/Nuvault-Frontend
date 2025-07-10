@@ -13,6 +13,7 @@ import {
 import api from '../services/api';
 import { useRouter } from 'expo-router';
 import { AntDesign, Feather } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 
 export default function AddPassword() {
   const router = useRouter();
@@ -83,6 +84,7 @@ export default function AddPassword() {
 
   return (
     <ScrollView className="flex-1 px-6 pt-4 bg-white">
+      <StatusBar style="dark" />
       {/* Botón de regreso */}
       <Pressable
         onPress={() => router.back()}

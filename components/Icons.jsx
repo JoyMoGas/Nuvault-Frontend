@@ -8,7 +8,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 export const AddIcon = (props) => (
-  <FontAwesome6 name="plus" size={36} color={"white"} {...props} />
+  <FontAwesome6 name="plus" size={32} color={"white"} {...props} />
 );
 
 export const KeyIcon = (props) => (
@@ -123,4 +123,8 @@ export const ErrorIcon = (props) => (
 
 export const WorkingIcon = (props) => (
   <Ionicons name="construct" size={24} color="#808080" {...props} />
+);
+
+export const CheckEmailIcon = (props) => (
+  <MaterialIcons name="mark-email-read" size={82} color="#808080" {...props} />
 );

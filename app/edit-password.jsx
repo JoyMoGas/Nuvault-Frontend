@@ -8,6 +8,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import api from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StatusBar } from 'expo-status-bar';
 
 export default function EditPassword() {
   const router = useRouter();
@@ -100,7 +101,9 @@ export default function EditPassword() {
   }
 
   return (
+    
     <ScrollView className="flex-1 px-6 pt-4 bg-white">
+      <StatusBar style="dark" />
       <Pressable
         onPress={() => router.back()}
         className="absolute left-4 top-10 z-10 bg-yellow-400 rounded-full p-2"
