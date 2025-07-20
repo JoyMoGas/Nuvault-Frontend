@@ -9,6 +9,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import api from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
+import StatusOverlay from '../components/StatusOverlay';
+import { useStatusOverlay } from '../context/StatusOverlayContext';
 
 export default function EditPassword() {
   const router = useRouter();
@@ -27,6 +29,8 @@ export default function EditPassword() {
   const [modalVisible, setModalVisible] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [focusedField, setFocusedField] = useState('');
+
+  const { showStatus } = useStatusOverlay();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,8 +89,7 @@ export default function EditPassword() {
         category_id: categoryId,     // ← IMPORTANTE
         type_id: selectedTags 
       });
-      Alert.alert('Actualizado', res.data.message);
-      router.back();
+      router.replace({ 'pathname': '/home', params: { status: 'Edited' } });
     } catch (e) {
       Alert.alert('Error', 'No se pudo actualizar la contraseña');
     }

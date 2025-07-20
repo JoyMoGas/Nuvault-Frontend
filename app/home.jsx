@@ -37,6 +37,9 @@ import {
   OtherIcon,
 } from '../components/Icons';
 import AuthModal from '../components/AuthModal';
+import StatusOverlay from '../components/StatusOverlay';
+import { useLocalSearchParams } from 'expo-router';
+import { useStatusOverlay } from '../context/StatusOverlayContext';
 
 export default function HomeScreen() {
   const [passwords, setPasswords] = useState([]);
@@ -49,9 +52,12 @@ export default function HomeScreen() {
   const [showPwdInput, setShowPwdInput] = useState(false);
   const [healthScore, setHealthScore] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showCopied, setShowCopied] = useState(false);
-  const copiedAnim = useRef(new Animated.Value(0)).current;
   const [username, setUsername] = useState('');
+
+  const params = useLocalSearchParams()
+  const [statusText, setStatusText] = useState('')
+  const { showStatus } = useStatusOverlay();
+  const allowedStatus = ['Edited', 'Deleted', 'Added', 'Copied'];
 
   const getCategoryIcon = (categoryName) => {
   switch (categoryName?.toUpperCase()) {
@@ -85,26 +91,19 @@ export default function HomeScreen() {
 };
 
   const triggerCopiedOverlay = () => {
-    setShowCopied(true);
-    copiedAnim.setValue(0);
-
-    Animated.timing(copiedAnim, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => {
-      setTimeout(() => {
-        Animated.timing(copiedAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }).start(() => {
-          setShowCopied(false);
-        });
-      }, 1000);
-    });
+    showStatus('Copied');
   };
 
+  useEffect(() => {
+  if (params.status && allowedStatus.includes(params.status)) {
+    showStatus(params.status.charAt(0).toUpperCase() + params.status.slice(1));
+    router.replace('/home')
+  }
+}, [params.status]);
+
+  const handleHideCopied = () => {
+    setShowCopied(false)
+  }
   const router = useRouter();    
 
 
@@ -342,7 +341,7 @@ export default function HomeScreen() {
 
                 <View style={{ position: 'absolute', top: 60, left: 20, zIndex: 30 }}>
                   <Text className='text-white font-bold text-lg'>
-                    {username || 'Usuario'}
+                    {username || 'User'}
                   </Text>
                   <Text className='text-white'>Welcome back again!</Text>
                 </View>
@@ -404,25 +403,6 @@ export default function HomeScreen() {
         <AddButton round />
       </View>
 
-      {showCopied && (
-        <Animated.View 
-          style={{
-            ...StyleSheet.absoluteFillObject,
-            backgroundColor: 'rgba(255,255,255,0.85)',
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: copiedAnim,
-            zIndex: 999,
-          }}
-          pointerEvents="none"
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
-          <Text className="font-bold" style={{ color: '#10B981', fontSize: 40 }}>Copied</Text>
-          <CheckIcon />
-        </View>
-
-        </Animated.View>
-      )}
       <AuthModal
         visible={modalAuth.visible}
         action={modalAuth.action}

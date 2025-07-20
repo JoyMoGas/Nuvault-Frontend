@@ -1,5 +1,6 @@
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Octicons from '@expo/vector-icons/Octicons';
 import Feather from '@expo/vector-icons/Feather';
@@ -127,4 +128,24 @@ export const WorkingIcon = (props) => (
 
 export const CheckEmailIcon = (props) => (
   <MaterialIcons name="mark-email-read" size={82} color="#808080" {...props} />
+);
+
+export const VeryStrongIcon = (props) => (
+  <FontAwesome5 name="user-shield" size={16} color="#10B981" {...props} />
+);
+
+export const StrongIcon = (props) => (
+  <FontAwesome5 name="shield-alt" size={16} color="#34D399" {...props} />
+);
+
+export const GoodIcon = (props) => (
+  <FontAwesome5 name="shield-alt" size={16} color="#FBBF24" {...props} />
+);
+
+export const ModerateIcon = (props) => (
+  <FontAwesome5 name="exclamation-circle" size={16} color="#F59E42" {...props} />
+);
+
+export const WeakIcon = (props) => (
+  <FontAwesome5 name="feather-alt" size={16} color="#EF4444" {...props} />
 );

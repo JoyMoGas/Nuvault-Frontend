@@ -47,9 +47,8 @@ export default function PasswordCard({
             borderWidth: 0.5,
             borderColor: '#e5e7eb',
             shadowColor: 'rgba(0,0,0,0.6)',
-            shadowOffset: { width: 0, height: 0 },
             shadowRadius: 10,
-            elevation: 5,
+            elevation: 3,
           }}
         >
           {/* Recuadro gris con icono a la izquierda */}

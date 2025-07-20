@@ -1,12 +1,18 @@
-// app/_layout.js
 import { Slot, useRouter, useSegments } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { LayoutContext } from '../context/LayoutContext';
+import { StatusOverlayProvider, useStatusOverlay } from '../context/StatusOverlayContext';
+import StatusOverlay from '../components/StatusOverlay';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import api from '../services/api';
+
+function OverlayGlobal() {
+  const { visible, text, hideStatus } = useStatusOverlay();
+  return <StatusOverlay visible={visible} text={text} onHide={hideStatus} />;
+}
 
 export default function Layout() {
   const router = useRouter();
@@ -17,17 +23,16 @@ export default function Layout() {
   const [authKey, setAuthKey] = useState(0);
 
   const checkAuth = async () => {
-  try {
-    await api.get('/validate-token'); // Esto ya incluye el token en headers automáticamente
-    setIsLoggedIn(true);
-  } catch (err) {
-    await AsyncStorage.removeItem('token');
-    setIsLoggedIn(false);
-  } finally {
-    setLoading(false);
-  }
-};
-
+    try {
+      await api.get('/validate-token');
+      setIsLoggedIn(true);
+    } catch (err) {
+      await AsyncStorage.removeItem('token');
+      setIsLoggedIn(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     checkAuth();
@@ -48,17 +53,20 @@ export default function Layout() {
   }, [loading, isLoggedIn, segments]);
 
   return (
-    <LayoutContext.Provider value={{ setAuthKey }}>
-      <StatusBar style="light" />
-      {loading ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" />
-        </View>
-      ) : (
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <Slot />
-        </GestureHandlerRootView>
-      )}
-    </LayoutContext.Provider>
+    <StatusOverlayProvider>
+      <LayoutContext.Provider value={{ setAuthKey }}>
+        <StatusBar style="light" />
+        {loading ? (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" />
+          </View>
+        ) : (
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Slot />
+            <OverlayGlobal />
+          </GestureHandlerRootView>
+        )}
+      </LayoutContext.Provider>
+    </StatusOverlayProvider>
   );
 }

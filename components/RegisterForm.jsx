@@ -141,14 +141,10 @@ export default function RegisterForm({ onTabChange }) {
         ? '#facc15'
         : '#d1d5db',
       backgroundColor: 'white',
-      borderRadius: 20,
+      borderRadius: 12,
       paddingHorizontal: 16,
       paddingVertical: 12,
       marginBottom: errors[field] ? 4 : 12,
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowRadius: 5,
-      elevation: 3,
     };
   }
 
@@ -222,7 +218,7 @@ export default function RegisterForm({ onTabChange }) {
           <ActivityIndicator color="#000" />
         ) : (
           <Text className="text-center font-bold text-black text-lg">
-            {codeSent ? 'Verify Code' : 'Send Verification Code'}
+            {codeSent ? 'Verify Code' : 'Create Account'}
           </Text>
         )}
         

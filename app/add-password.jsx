@@ -14,6 +14,7 @@ import api from '../services/api';
 import { useRouter } from 'expo-router';
 import { AntDesign, Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { useStatusOverlay } from '../context/StatusOverlayContext';
 
 export default function AddPassword() {
   const router = useRouter();
@@ -30,6 +31,8 @@ export default function AddPassword() {
   const [modalVisible, setModalVisible] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [focusedField, setFocusedField] = useState('');
+
+  const { showStatus } = useStatusOverlay();
 
   // Fetch categories and types (tags)
   useEffect(() => {
@@ -71,8 +74,7 @@ export default function AddPassword() {
         type_id: selectedTags,
         is_favorite: isFavorite
       });
-      Alert.alert('Éxito', res.data.message);
-      router.back();
+      router.replace({ 'pathname': '/home', params: { status: 'Added' } });
     } catch (e) {
       if (e.response?.status === 409) {
         setErrorMsg(e.response.data.message);

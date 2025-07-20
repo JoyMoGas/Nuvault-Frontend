@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import { RegenerateIcon, CheckIcon } from '../components/Icons';
 import { StatusBar } from 'expo-status-bar';
+import { VeryStrongIcon, StrongIcon, GoodIcon, ModerateIcon, WeakIcon } from '../components/Icons';
 
 export default function GeneratePassword() {
   const router = useRouter();
@@ -29,12 +30,29 @@ export default function GeneratePassword() {
   const [copied, setCopied] = useState(false);
 
   const strengthColor = {
-    'Débil': 'text-red-500',
-    'Moderado': 'text-yellow-500',
-    'Bueno': 'text-blue-500',
-    'Fuerte': 'text-green-500',
-    'Muy Fuerte': 'text-emerald-500',
+    'Weak': 'text-red-500',
+    'Moderate': 'text-yellow-500',
+    'Good': 'text-blue-500',
+    'Strong': 'text-green-500',
+    'Very Strong': 'text-emerald-500',
   };
+
+  const getStrengthIcon = (level) => {
+  switch (level) {
+    case 'Very Strong':
+      return <VeryStrongIcon />;
+    case 'Strong':
+      return <StrongIcon />;
+    case 'Good':
+      return <GoodIcon />;
+    case 'Moderate':
+      return <ModerateIcon />;
+    case 'Weak':
+      return <WeakIcon />;
+    default:
+      return null;
+  }
+};
 
   const generate = async () => {
     if (!uppercase && !lowercase && !numbers && !special) {
@@ -120,7 +138,7 @@ export default function GeneratePassword() {
             <Text className={`${strengthColor[strength] || 'text-gray-500'} font-semibold text-base`}>
               {strength}
             </Text>
-            <MaterialIcons name="verified-user" size={18} color="green" />
+            {getStrengthIcon(strength)}
           </View>
         ) : null}
 
