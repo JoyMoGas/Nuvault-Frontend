@@ -60,6 +60,9 @@ export default function HomeScreen() {
   const { showStatus } = useStatusOverlay();
   const allowedStatus = ['Edited', 'Deleted', 'Added', 'Copied'];
 
+  const [cachedPasswords, setCachedPasswords] = useState({});
+  const [cachedHealthScore, setCachedHealthScore] = useState(null)
+
   const getCategoryIcon = (categoryName) => {
   switch (categoryName?.toUpperCase()) {
     case 'BROWSER':
@@ -113,6 +116,14 @@ export default function HomeScreen() {
 
 
   const fetchPasswords = async (filter) => {
+    if (cachedPasswords[filter]) {
+        // If data for this filter is cached, use it
+        setPasswords(cachedPasswords[filter]);
+        setLoading(false);
+        setError(null);
+        return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -126,8 +137,11 @@ export default function HomeScreen() {
         const order = filter === 'Recent' ? 'recent' : 'oldest';
         res = await api.get(`/passwords-sorted?order=${order}&show_plaintext=true`);
       }
-      setPasswords(Array.isArray(res.data) ? res.data : []);
+      const fetchedData = Array.isArray(res.data) ? res.data : [];
+      setPasswords(fetchedData);
       setVisiblePasswords({});
+
+      setCachedPasswords(prevCache => ({ ...prevCache, [filter]: fetchedData }));
     } catch {
       setError('Error al cargar contraseñas');
     } finally {
@@ -136,14 +150,23 @@ export default function HomeScreen() {
   };
 
   const fetchHealthScore = async () => {
+    if (cachedHealthScore !== null) {
+        // If health score is cached, use it
+        setHealthScore(cachedHealthScore);
+        return;
+    }
     try {
       const token = await AsyncStorage.getItem('token');
       const res = await api.get('/health-score', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setHealthScore(Math.max(0, res.data.health_score));
+      const fetchedHealthScore = Math.max(0, res.data.health_score)
+      setHealthScore(fetchedHealthScore);
+
+      setCachedHealthScore(fetchedHealthScore);
     } catch {
       setHealthScore(0);
+      setCachedHealthScore(0);
     }
   };
 

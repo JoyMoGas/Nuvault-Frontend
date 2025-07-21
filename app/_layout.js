@@ -1,14 +1,18 @@
 import { Slot, useRouter, useSegments } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, createContext } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
-import { LayoutContext } from '../context/LayoutContext';
+import { LayoutContext as OriginalLayoutContext } from '../context/LayoutContext';
 import { StatusOverlayProvider, useStatusOverlay } from '../context/StatusOverlayContext';
 import StatusOverlay from '../components/StatusOverlay';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import api from '../services/api';
 import Logo from '../assets/logo-text.svg';
+import React from 'react'; // Ensure React is imported
+
+// Create the actual context
+export const LayoutContext = React.createContext({});
 
 function OverlayGlobal() {
   const { visible, text, hideStatus } = useStatusOverlay();
@@ -22,6 +26,8 @@ export default function Layout() {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authKey, setAuthKey] = useState(0);
+  const [cachedPasswords, setCachedPasswords] = useState({});
+  const [cachedHealthScore, setCachedHealtScore] = useState(null)
 
   const checkAuth = async () => {
       try {
@@ -55,7 +61,7 @@ export default function Layout() {
 
   return (
       <StatusOverlayProvider>
-        <LayoutContext.Provider value={{ setAuthKey }}>
+        <LayoutContext.Provider value={{ setAuthKey, cachedPasswords, setCachedPasswords, cachedHealthScore, setCachedHealtScore }}>
             <StatusBar style="light" />
             {loading ? (
               <View className="flex-1 justify-center items-center bg-[#2E2E2E]">
