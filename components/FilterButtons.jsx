@@ -15,12 +15,14 @@ export default function FilterButtons({ activeFilter, onChange }) {
               width: 80,               // ancho fijo igual para todos
               paddingVertical: 8,
               borderRadius: 9999,
+              borderRadius: 16,
+              borderWidth: 0.5,
+              borderColor: '#e5e7eb',
               backgroundColor: isActive ? '#FFD400' : '#FFFFFF',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
+              shadowColor: 'rgba(0,0,0,0.6)',
               shadowOpacity: 0.15,
-              shadowRadius: 6,
-              elevation: 5,
+              shadowRadius: 10,
+              elevation: 3,
               justifyContent: 'center',
               alignItems: 'center',
               marginHorizontal: 8,     // margen igual a ambos lados

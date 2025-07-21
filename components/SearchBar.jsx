@@ -10,11 +10,11 @@ export default function SearchBar({ value, onChange }) {
         backgroundColor: '#fff',
         paddingHorizontal: 16,
         paddingVertical: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 5,
+        borderWidth: 0.5,
+        borderColor: '#e5e7eb',
+        shadowColor: 'rgba(0,0,0,0.6)',
+        shadowRadius: 10,
+        elevation: 3,
       }}
     >
       <View className="flex-row items-center space-x-2">
@@ -24,11 +24,11 @@ export default function SearchBar({ value, onChange }) {
           value={value}
           onChangeText={onChange}
           className="text-base text-gray-800 flex-1"
-          placeholderTextColor="#A0A0A0"
+          placeholderTextColor="#808080"
         />
         {value.length > 0 && (
           <Pressable onPress={() => onChange('')}>
-            <Ionicons name="close-circle" size={20} color="#A0A0A0" />
+            <Ionicons name="close-circle" size={20} color="#808080" />
           </Pressable>
         )}
       </View>

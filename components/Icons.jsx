@@ -139,7 +139,7 @@ export const StrongIcon = (props) => (
 );
 
 export const GoodIcon = (props) => (
-  <FontAwesome5 name="shield-alt" size={16} color="#FBBF24" {...props} />
+  <FontAwesome5 name="shield-alt" size={16} color="#3c83f6" {...props} />
 );
 
 export const ModerateIcon = (props) => (
@@ -151,5 +151,9 @@ export const WeakIcon = (props) => (
 );
 
 export const HealthIcon = (props) => (
-  <FontAwesome5 name="heartbeat" size={22} color="#facc15" {...props} />
+  <FontAwesome5 name="heartbeat" size={24} color="#facc15" {...props} />
+);
+
+export const ResetIcon = (props) => (
+  <MaterialCommunityIcons name="form-textbox-password" size={82} color="#808080" {...props} />
 );

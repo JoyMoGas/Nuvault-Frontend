@@ -95,6 +95,10 @@ export default function HomeScreen() {
     showStatus('Copied');
   };
 
+  const triggerDeletedOverlay = () => {
+    showStatus('Deleted')
+  }
+
   useEffect(() => {
   if (params.status && allowedStatus.includes(params.status)) {
     showStatus(params.status.charAt(0).toUpperCase() + params.status.slice(1));
@@ -200,7 +204,7 @@ export default function HomeScreen() {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPasswords((prev) => prev.filter((p) => p.pass_id !== modalAuth.passId));
-        Alert.alert('Eliminado', 'Registro eliminado correctamente');
+        triggerDeletedOverlay()
       }
 
       setModalAuth({ visible: false, action: null, passId: null });
@@ -258,7 +262,7 @@ export default function HomeScreen() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPasswords((prev) => prev.filter((p) => p.pass_id !== passId));
-      Alert.alert('Eliminado', 'Registro eliminado correctamente');
+      triggerDeletedOverlay()
     }
 
     setModalAuth({ visible: false, action: null, passId: null });
@@ -292,11 +296,11 @@ export default function HomeScreen() {
               >
                 {/* ScoreBar con HealthScore centrado */}
                 <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center', marginTop: 40, marginBottom: 30 }}>
-                  <View style={{ zIndex: 10 }}>
-                    <ScoreBar score={healthScore} />
-                  </View>
-                  <View
-                    style={{
+                <View style={{ zIndex: 10 }}>
+                  <ScoreBar score={healthScore} />
+                </View>
+                <View
+                  style={{
                     position: 'absolute',
                     zIndex: 20,
                     alignItems: 'center',
@@ -304,26 +308,27 @@ export default function HomeScreen() {
                     top: '50%',
                     left: 0,
                     right: 0,
-                    transform: [{ translateY: 0 }], // Ajusta según el alto de HealthScore
+                    transform: [{ translateY: 0 }],
                   }}
-                  >
-                    <HealthScore score={healthScore} />
-                  </View>
-                  <View
-                    style={{
-                      position: 'absolute',
-                      left: '50%',
-                      bottom: -15, // o ajusta según tu preferencia
-                      transform: [{ translateX: -100 }], // Si Heart es 48px de ancho
-                      zIndex: 25, // Más alto que el efecto borroso
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 48,
-                      height: 48,
-                    }}
-                  >
-                    <Heart />
-                  </View>
+                >
+                  <HealthScore score={healthScore} />
+                </View>
+                
+              </View>
+
+              <View
+                  style={{
+                    position: 'absolute',
+                    left: '50%',
+                    bottom: 87,
+                    zIndex: 35,
+                    width: 28,
+                    height: 28,
+                    alignItems: 'center', // Add alignItems and justifyContent for internal centering
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Heart />
                 </View>
 
                 {/* Difuminado gris */}

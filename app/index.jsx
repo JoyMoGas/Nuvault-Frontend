@@ -75,14 +75,14 @@ export default function WelcomeScreen() {
           zIndex: 2,
         }}
       >
-        <View className='mb-10'>
+        <View className='mb-6'>
           <Text
             style={{
               color: 'white',
               fontSize: 36,
               fontWeight: 'bold',
               textAlign: 'left',
-              paddingBottom: 6,
+              marginBottom: 6,
               lineHeight: 42,
             }}
           >

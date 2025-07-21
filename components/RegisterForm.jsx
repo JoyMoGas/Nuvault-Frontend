@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, Alert, TouchableOpacity, Modal, Style
 import api from '../services/api';
 import { CheckEmailIcon, CheckIcon, EmailIcon } from './Icons';
 
+
 export default function RegisterForm({ onTabChange }) {
   const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -54,7 +55,7 @@ export default function RegisterForm({ onTabChange }) {
     setLoading(true)
 
     try {
-      await api.post('/register/start', { user_email: email, username: username });
+      await api.post('/register/start', { user_email: email, username: username, user_password: password });
       setCodeSent(true);
       setModalVisible(true);
       setCodeDigits(['', '', '', '', '']);
@@ -64,6 +65,8 @@ export default function RegisterForm({ onTabChange }) {
         setErrors((prev) => ({ ...prev, user_email: err.response.data.message }));
       } else if (err.response?.status === 409 && err.response.data.error === 'username') {
         setErrors((prev) => ({ ...prev, username: err.response.data.message }));
+      }  else if (err.response?.status === 400 && err.response.data.error === 'password') {
+        setErrors((prev) => ({ ...prev, password: err.response.data.message }))
       } else {
         setErrorMsg('Failed to send verification code');
       }
@@ -170,7 +173,7 @@ export default function RegisterForm({ onTabChange }) {
 
       <Text className="text-gray-500 mb-1">Email Address</Text>
       <TextInput
-        placeholder="e.g. john@example.com"
+        placeholder="your.email@example.com"
         value={email}
         onChangeText={text => {
           setEmail(text);
@@ -223,6 +226,13 @@ export default function RegisterForm({ onTabChange }) {
         )}
         
       </Pressable>
+
+      <Text className="text-center text-sm text-gray-500 mt-2">
+        Already have account?{' '}
+        <Text className="text-yellow-500 font-semibold" onPress={() => onTabChange('login')}>
+          Login
+        </Text>
+      </Text>
 
       <Modal
         visible={modalVisible}
