@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, Easing } from 'react-native';
 import { Svg, Circle, G, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Heart from './Heart';
 
 const SIZE = 220;
 const STROKE_WIDTH = 14;
@@ -72,9 +73,10 @@ export default function ScoreBar({ score = 0, children }) {
       </Svg>
 
       {/* Contenido central: HealthScore */}
-      <View style={{ position: 'absolute', zIndex: 1001 }}>
+      <View style={{ position: 'absolute', zIndex: 999 }}>
         {children}
       </View>
+      
     </View>
   );
 }

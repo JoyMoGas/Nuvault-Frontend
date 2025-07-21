@@ -40,6 +40,7 @@ import AuthModal from '../components/AuthModal';
 import StatusOverlay from '../components/StatusOverlay';
 import { useLocalSearchParams } from 'expo-router';
 import { useStatusOverlay } from '../context/StatusOverlayContext';
+import Heart from '../components/health_score/Heart';
 
 export default function HomeScreen() {
   const [passwords, setPasswords] = useState([]);
@@ -296,13 +297,32 @@ export default function HomeScreen() {
                   </View>
                   <View
                     style={{
-                      position: 'absolute',
-                      zIndex: 20,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
+                    position: 'absolute',
+                    zIndex: 20,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    top: '50%',
+                    left: 0,
+                    right: 0,
+                    transform: [{ translateY: 0 }], // Ajusta según el alto de HealthScore
+                  }}
                   >
                     <HealthScore score={healthScore} />
+                  </View>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: '50%',
+                      bottom: -15, // o ajusta según tu preferencia
+                      transform: [{ translateX: -100 }], // Si Heart es 48px de ancho
+                      zIndex: 25, // Más alto que el efecto borroso
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 48,
+                      height: 48,
+                    }}
+                  >
+                    <Heart />
                   </View>
                 </View>
 

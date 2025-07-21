@@ -149,3 +149,7 @@ export const ModerateIcon = (props) => (
 export const WeakIcon = (props) => (
   <FontAwesome5 name="feather-alt" size={16} color="#EF4444" {...props} />
 );
+
+export const HealthIcon = (props) => (
+  <FontAwesome5 name="heartbeat" size={22} color="#facc15" {...props} />
+);
