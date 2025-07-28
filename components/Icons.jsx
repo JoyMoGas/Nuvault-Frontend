@@ -157,3 +157,15 @@ export const HealthIcon = (props) => (
 export const ResetIcon = (props) => (
   <MaterialCommunityIcons name="form-textbox-password" size={82} color="#808080" {...props} />
 );
+
+export const UserIcon = (props) => (
+  <MaterialIcons name="person-outline" size={24} color="#6B7280" {...props} />
+);
+
+export const NamesIcon = (props) => (
+  <MaterialIcons name="badge" size={24} color="#6B7280" {...props} />
+);
+
+export const PhoneIcon = (props) => (
+  <Feather name="phone" size={24} color="#6B7280" {...props} />
+);

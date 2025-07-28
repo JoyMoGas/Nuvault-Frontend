@@ -13,6 +13,7 @@ import { LayoutContext } from '../context/LayoutContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
 import { CheckEmailIcon, ResetIcon } from './Icons';
+import { useRouter } from 'expo-router';
 
 // Note: Removed unused imports like Image, NotAvailableButton, WebBrowser, Constants
 // as they were not used in the provided snippet. Add them back if needed elsewhere.
@@ -41,6 +42,8 @@ export default function LoginForm({ onTabChange }) {
   const [resetMsg, setResetMsg] = useState('');
   
   const resetInputRefs = useRef([]);
+
+  const router = useRouter();
 
   // --- PASSWORD RESET UTILITY FUNCTIONS ---
 
@@ -175,33 +178,54 @@ export default function LoginForm({ onTabChange }) {
 
   // --- EMAIL/PASSWORD LOGIN HANDLER ---
   const handleLogin = async () => {
-    setErrors({});
-    if (!email || !password) {
-      // Using a custom message for clarity instead of alert
-      setErrors({ form: 'Please enter both email and password.' });
-      return;
+  setErrors({});
+  if (!email || !password) {
+    setErrors({ form: 'Please enter both email and password.' });
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const res = await api.post('/login', {
+      user_email: email,
+      user_password: password,
+    });
+
+    const token = res.data?.token;
+
+    if (!token || typeof token !== 'string') {
+      throw new Error('Invalid token format');
     }
-    setLoading(true);
-    try {
-      const res = await api.post('/login', {
-        user_email: email,
-        user_password: password,
-      });
-      const token = res.data.token;
-      await AsyncStorage.setItem('token', token);
-      setAuthKey((prev) => prev + 1);
-    } catch (err) {
-      if (err.response?.status === 400 && err.response.data.error === 'user_email') {
-        setErrors((prev) => ({ ...prev, user_email: err.response.data.message }));
-      } else if (err.response?.status === 401 && err.response.data.error === 'user_password') {
-        setErrors((prev) => ({ ...prev, user_password: err.response.data.message }));
+
+    await AsyncStorage.setItem('token', token);
+
+    // Verifica manualmente antes de hacer el setAuthKey
+    setTimeout(async () => {
+      const storedToken = await AsyncStorage.getItem('token');
+      console.log('✅ Token guardado:', storedToken); // Debug opcional
+
+      if (storedToken) {
+        setAuthKey((prev) => prev + 1);
       } else {
-        setErrors({ form: 'Invalid credentials or server error.' });
+        console.warn('⚠️ Token aún no disponible en AsyncStorage');
       }
-    } finally {
-      setLoading(false);
+    }, 200); // Puedes probar con 200ms, 300ms o hasta 500ms si hace falta
+
+
+  } catch (err) {
+    console.warn('Login error:', err);
+    if (err.response?.status === 400 && err.response.data.error === 'user_email') {
+      setErrors((prev) => ({ ...prev, user_email: err.response.data.message }));
+    } else if (err.response?.status === 401 && err.response.data.error === 'user_password') {
+      setErrors((prev) => ({ ...prev, user_password: err.response.data.message }));
+    } else {
+      setErrors({ form: 'Invalid credentials or server error.' });
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>

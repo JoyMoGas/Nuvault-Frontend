@@ -7,100 +7,68 @@ import {
   TouchableWithoutFeedback,
   Animated,
 } from 'react-native';
-import { SettingsIcon } from '../Icons';
+import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
+import { SettingsIcon } from '../Icons';
 import LogoutButton from './LogoutButton';
 import NotAvailableButton from './NotAvailable';
 
-export default function SettingsButton({ onLogout, onSettings }) {
-  const [showMenu, setShowMenu] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const backdropAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (showMenu) {
-      setIsVisible(true);
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdropAnim, {
-          toValue: 0.4,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdropAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start(() => setIsVisible(false));
-    }
-  }, [showMenu]);
+export default function SettingsButton({ isOpen, setIsOpen, onLogout }) {
+  const router = useRouter();
 
   return (
-    <View style={{ position: 'relative', zIndex: 1000 }}>
-      <Pressable style={styles.button} onPress={() => setShowMenu((prev) => !prev)}>
+    <>
+      <Pressable
+        style={styles.button}
+        onPress={() => setIsOpen(prev => !prev)}
+      >
         <SettingsIcon />
       </Pressable>
 
-      {isVisible && (
+      {isOpen && (
         <>
-          <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
-            <Animated.View />
+          {/* Fondo semitransparente */}
+          <TouchableWithoutFeedback className='z-50' onPress={() => setIsOpen(false)}>
+            <View style={styles.backdrop} />
           </TouchableWithoutFeedback>
 
-          <Animated.View style={[styles.menu, { opacity: fadeAnim }]}>
+          {/* Menú */}
+          <View style={styles.menu}>
             <Pressable
               style={styles.menuItem}
               onPress={() => {
-                setShowMenu(false);
-                onSettings?.();
+                setIsOpen(false);
+                router.push('/settings');
               }}
             >
               <Feather name="settings" size={18} color="#000" style={styles.menuIcon} />
-              <NotAvailableButton>
-                <Text style={styles.menuItemText}>Settings</Text>
-              </NotAvailableButton>
-              
+              <Text style={styles.menuItemText}>Settings</Text>
             </Pressable>
+
             <Pressable
               style={styles.menuItem}
               onPress={() => {
-                setShowMenu(false);
+                setIsOpen(false);
                 onLogout?.();
               }}
             >
               <Feather name="log-out" size={18} color="#000" style={styles.menuIcon} />
               <LogoutButton />
             </Pressable>
+
             <Pressable
               style={styles.menuItem}
-              onPress={() => {
-                setShowMenu(false);
-                onSettings?.();
-              }}
+              onPress={() => setIsOpen(false)}
             >
               <Feather name="info" size={18} color="#000" style={styles.menuIcon} />
               <NotAvailableButton>
                 <Text style={styles.menuItemText}>Help</Text>
               </NotAvailableButton>
             </Pressable>
-          </Animated.View>
+          </View>
         </>
       )}
-    </View>
+    </>
   );
 }
 
@@ -115,6 +83,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  backdrop: {
+    position: 'absolute',
+    top: -1000, // extender fuera para cubrir toda la pantalla, ajusta si es necesario
+    left: -1000,
+    right: -1000,
+    bottom: -1000,
+    backgroundColor: 'transparent',
+    zIndex: 55,
+  },
   menu: {
     position: 'absolute',
     top: 65,
@@ -125,7 +102,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     paddingVertical: 8,
     width: 125,
-    zIndex: 1001,
+    zIndex: 1000,
   },
   menuItem: {
     flexDirection: 'row',

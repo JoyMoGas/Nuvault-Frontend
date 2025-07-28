@@ -98,11 +98,11 @@ export default function RegisterForm({ onTabChange }) {
     try {
       setErrors({});
       await api.post('/register/confirm', {
-        username,
+        username: username,
+        user_email: email,
+        new_password: password,
         first_name: firstName,
         last_name: lastName,
-        user_email: email,
-        user_password: password,
         code,
       });
       setModalVisible(false);

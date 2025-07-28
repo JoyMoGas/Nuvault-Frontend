@@ -119,6 +119,7 @@ export default function EditPassword() {
       <Text className="text-xl font-bold mb-2">Credentials</Text>
 
       <Text className="text-gray-500 mb-1">Select Categories</Text>
+      
       <Pressable
         onPress={() => setModalVisible('category')}
         className="bg-white border rounded-xl px-4 py-3 mb-4 shadow-md"

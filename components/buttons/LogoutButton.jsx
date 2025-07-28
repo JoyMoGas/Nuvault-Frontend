@@ -1,23 +1,34 @@
-import { Pressable, Text, Alert, Modal, View } from 'react-native';
+import { Pressable, Text, Modal, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useContext, useState } from 'react';
 import { LayoutContext } from '../../context/LayoutContext';
 import { ErrorIcon } from '../Icons';
+import { useRouter } from 'expo-router';
 
-export default function LogoutButton() {
+export default function LogoutButton({
+  label = "Sign Out",
+  labelClassName = "text-black font-bold text-base text-center",
+  modalTitle = "Sign Out",
+  modalMessage = "Are you sure you want to Sign Out?",
+  onLoggedOut = () => {},
+}) {
   const { setAuthKey } = useContext(LayoutContext);
-  const [modalVisible, setModalVisible] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const router = useRouter()
 
   const handleLogOut = async () => {
     await AsyncStorage.removeItem('token');
     setAuthKey((prev) => prev + 1);
-    setModalVisible(false)
-  }
+    setModalVisible(false);
+    onLoggedOut();
+
+  };
 
   return (
     <>
       <Pressable onPress={() => setModalVisible(true)}>
-        <Text className="text-black font-bold text-base text-center">Log Out</Text>
+        <Text className={labelClassName}>{label}</Text>
       </Pressable>
       <Modal
         visible={modalVisible}
@@ -31,7 +42,6 @@ export default function LogoutButton() {
           justifyContent: 'center',
           alignItems: 'center'
         }}>
-          
           <View style={{
             backgroundColor: 'white',
             borderRadius: 16,
@@ -42,8 +52,8 @@ export default function LogoutButton() {
             <View>
               <ErrorIcon />
             </View>
-            <Text style={{ fontSize: 24, fontWeight: 'bold', marginVertical: 12 }}>Log Out</Text>
-            <Text style={{ fontSize: 14, color: '#555', marginBottom: 24 }}>Are you sure you want to Log Out?</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', marginVertical: 12 }}>{modalTitle}</Text>
+            <Text style={{ fontSize: 14, color: '#555', marginBottom: 24 }}>{modalMessage}</Text>
             <View style={{ flexDirection: 'row', gap: 16 }}>
               <Pressable
                 style={{

@@ -4,7 +4,7 @@ const FILTERS = ['All', 'Favorites', 'Recent', 'Oldest'];
 
 export default function FilterButtons({ activeFilter, onChange }) {
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
+    <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16, zIndex: 0 }}>
       {FILTERS.map((filter) => {
         const isActive = activeFilter === filter;
         return (

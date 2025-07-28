@@ -63,6 +63,8 @@ export default function HomeScreen() {
   const [cachedPasswords, setCachedPasswords] = useState({});
   const [cachedHealthScore, setCachedHealthScore] = useState(null)
 
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const getCategoryIcon = (categoryName) => {
   switch (categoryName?.toUpperCase()) {
     case 'BROWSER':
@@ -263,6 +265,12 @@ export default function HomeScreen() {
         }
       } catch (err) {
         console.log('Error al obtener usuario:', err);
+
+        // Si es 404, usuario no existe → cerrar sesión y redirigir
+        if (err.response?.status === 404) {
+          await AsyncStorage.removeItem('token');
+          router.replace('/');
+        }
       }
     };
 
@@ -358,11 +366,11 @@ export default function HomeScreen() {
                 <View
                   style={{
                     position: 'absolute',
-                    bottom: 40,
+                    bottom: 5,
                     left: 0,
                     right: 0,
-                    height: 200,
-                    zIndex: 15,
+                    height: 300,
+                    zIndex: 10,
                   }}
                   pointerEvents="none"
                 >
@@ -383,9 +391,14 @@ export default function HomeScreen() {
                   <GenerateButton />
                 </View>
 
-                <View style={{ position: 'absolute', top: 60, right: 20, zIndex: 30 }}>
-                  <SettingsButton />
-                </View>
+                <View style={{ position: 'absolute', top: 60, right: 20, zIndex: 10000 }}>
+                <SettingsButton
+                  isOpen={isSettingsOpen}
+                  setIsOpen={setIsSettingsOpen}
+                />
+              </View>
+
+
 
                 <View style={{ position: 'absolute', top: 60, left: 20, zIndex: 30 }}>
                   <Text className='text-white font-bold text-lg'>
@@ -407,12 +420,12 @@ export default function HomeScreen() {
                 paddingTop: 24,
                 marginTop: -40,
                 marginBottom: 20,
-                zIndex: 50,
+                zIndex: 5,
               }}
             >
               <SearchBar value={searchQuery} onChange={setSearchQuery} />
               <FilterButtons activeFilter={activeFilter} onChange={setActiveFilter} />
-              <Text className="text-3xl font-bold mb-1 mt-2">
+              <Text className="text-3xl font-bold mb-1 mt-2 z-0">
                 {FILTER_TITLES[activeFilter] || 'Your Vaults'}
               </Text>
             </View>
@@ -440,9 +453,9 @@ export default function HomeScreen() {
           loading ? (
             <ActivityIndicator size="large" style={{ marginTop: 20 }} />
           ) : error ? (
-            <Text className="text-red-600 text-center mt-4">{error}</Text>
+            <Text className="text-red-600 text-center mt-4 z-0">{error}</Text>
           ) : (
-            <Text className="text-center mt-4 text-gray-500">There are no saved passwords</Text>
+            <Text className="text-center mt-4 text-gray-500 z-0">There are no saved passwords</Text>
           )
         }
       />
