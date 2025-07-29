@@ -3,7 +3,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const api = axios.create({
-  baseURL: 'http://192.168.1.69:5000/api',
+  baseURL: 'https://nuvault-backend.onrender.com/api',
 });
 
 // Añadir el token JWT automáticamente en cada request
