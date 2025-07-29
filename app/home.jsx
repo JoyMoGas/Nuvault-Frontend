@@ -41,9 +41,11 @@ import StatusOverlay from '../components/StatusOverlay';
 import { useLocalSearchParams } from 'expo-router';
 import { useStatusOverlay } from '../context/StatusOverlayContext';
 import Heart from '../components/health_score/Heart';
+import { usePasswords } from '../context/PasswordsContext';
+import PasswordCardSkeleton from '../components/PasswordCardSkeleton';
+import TextSkeleton from '../components/TextSkeleton ';
 
 export default function HomeScreen() {
-  const [passwords, setPasswords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
@@ -51,19 +53,27 @@ export default function HomeScreen() {
   const [modalAuth, setModalAuth] = useState({ visible: false, action: null, passId: null });
   const [pwdInput, setPwdInput] = useState('');
   const [showPwdInput, setShowPwdInput] = useState(false);
-  const [healthScore, setHealthScore] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [username, setUsername] = useState('');
-
   const params = useLocalSearchParams()
   const [statusText, setStatusText] = useState('')
   const { showStatus } = useStatusOverlay();
   const allowedStatus = ['Edited', 'Deleted', 'Added', 'Copied'];
 
-  const [cachedPasswords, setCachedPasswords] = useState({});
-  const [cachedHealthScore, setCachedHealthScore] = useState(null)
-
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const {
+    passwordsCache,
+    setPasswordsCache,
+    healthScore,
+    setHealthScore,
+    fetchPasswords,
+    fetchHealthScore,
+    username,
+    fetchUsername
+  } = usePasswords();
+
+
+  const passwords = passwordsCache[activeFilter] || [];
 
   const getCategoryIcon = (categoryName) => {
   switch (categoryName?.toUpperCase()) {
@@ -116,66 +126,14 @@ export default function HomeScreen() {
   }
   const router = useRouter();    
 
-
-  const fetchPasswords = async (filter) => {
-    if (cachedPasswords[filter]) {
-        // If data for this filter is cached, use it
-        setPasswords(cachedPasswords[filter]);
-        setLoading(false);
-        setError(null);
-        return;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      let res;
-      const config = { show_plaintext: true };
-      if (filter === 'All') {
-        res = await api.post('/my-passwords', config);
-      } else if (filter === 'Favorites') {
-        res = await api.post('/favorites', config);
-      } else {
-        const order = filter === 'Recent' ? 'recent' : 'oldest';
-        res = await api.get(`/passwords-sorted?order=${order}&show_plaintext=true`);
-      }
-      const fetchedData = Array.isArray(res.data) ? res.data : [];
-      setPasswords(fetchedData);
-      setVisiblePasswords({});
-
-      setCachedPasswords(prevCache => ({ ...prevCache, [filter]: fetchedData }));
-    } catch {
-      setError('Error al cargar contraseñas');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchHealthScore = async () => {
-    if (cachedHealthScore !== null) {
-        // If health score is cached, use it
-        setHealthScore(cachedHealthScore);
-        return;
-    }
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const res = await api.get('/health-score', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const fetchedHealthScore = Math.max(0, res.data.health_score)
-      setHealthScore(fetchedHealthScore);
-
-      setCachedHealthScore(fetchedHealthScore);
-    } catch {
-      setHealthScore(0);
-      setCachedHealthScore(0);
-    }
-  };
-
   useEffect(() => {
     fetchPasswords(activeFilter);
-    fetchHealthScore();
   }, [activeFilter]);
+
+  useEffect(() => {
+    fetchHealthScore();
+  }, []);
+
 
   const toggleFavorite = async (id) => {
     try {
@@ -253,28 +211,9 @@ export default function HomeScreen() {
 };
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        const res = await api.get('/user-info', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (res.data?.username) {
-          setUsername(res.data.username);
-        }
-      } catch (err) {
-        console.log('Error al obtener usuario:', err);
-
-        // Si es 404, usuario no existe → cerrar sesión y redirigir
-        if (err.response?.status === 404) {
-          await AsyncStorage.removeItem('token');
-          router.replace('/');
-        }
-      }
-    };
-
-    fetchUserInfo();
+    if (!username) {
+      fetchUsername();
+    }
   }, []);
 
   const handleAuthConfirm = async (inputPassword, action, passId) => {
@@ -303,6 +242,13 @@ export default function HomeScreen() {
     Alert.alert('Error', 'Contraseña inválida');
   }
 };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour <12) return 'Good morning!';
+    if (hour < 18) return 'Good afternoon!';
+    return 'Good evening'
+  }
 
 
   return (
@@ -401,10 +347,15 @@ export default function HomeScreen() {
 
 
                 <View style={{ position: 'absolute', top: 60, left: 20, zIndex: 30 }}>
+                  <Text className='text-white'>{getGreeting()}</Text>
                   <Text className='text-white font-bold text-lg'>
-                    {username || 'User'}
+                    {username ? (
+                      <Text className='text-white font-bold text-lg'>{username}</Text>
+                    ) : (
+                      // Skeleton placeholder para username mientras carga
+                      <TextSkeleton width={120} height={20} borderRadius={8} />
+                      )}
                   </Text>
-                  <Text className='text-white'>Welcome back again!</Text>
                 </View>
 
               </ImageBackground>
@@ -451,7 +402,11 @@ export default function HomeScreen() {
         ListFooterComponent={<View style={{ height: 100 }} />}
         ListEmptyComponent={
           loading ? (
-            <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+            <View>
+              {[...Array(5)].map((_, i) => (
+                <PasswordCardSkeleton key={i} />
+              ))}
+            </View>
           ) : error ? (
             <Text className="text-red-600 text-center mt-4 z-0">{error}</Text>
           ) : (

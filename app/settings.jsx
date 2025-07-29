@@ -129,7 +129,10 @@ export default function Settings() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-xl font-bold text-gray-700 mb-4">Notifications</Text>
+          <Text className="text-xl font-bold text-gray-700 mb-1">Notifications</Text>
+          <Text className="text-xs text-gray-500 italic mb-4">
+            (This function is not available yet, so it does not affect anything if enabled or disabled)
+          </Text>
           <SettingsSwitchItem
             icon={<Ionicons name="notifications-outline" size={24} color="#6B7280" />}
             label="App notification"
@@ -137,6 +140,7 @@ export default function Settings() {
             onValueChange={setAppNotificationsEnabled}
           />
         </View>
+
 
         <View className="mb-6">
           <Text className="text-xl font-bold text-gray-700 mb-4">More</Text>

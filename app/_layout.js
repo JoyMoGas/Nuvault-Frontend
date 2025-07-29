@@ -11,6 +11,7 @@
   import Logo from '../assets/logo-text.svg';
   import React from 'react'; // Ensure React is imported
   import { LayoutContext } from '../context/LayoutContext';
+  import { PasswordsProvider } from '../context/PasswordsContext';
 
   import { LogBox } from 'react-native';
 
@@ -78,6 +79,7 @@
     return (
         <StatusOverlayProvider>
           <LayoutContext.Provider value={{ setAuthKey, cachedPasswords, setCachedPasswords, cachedHealthScore, setCachedHealtScore }}>
+            <PasswordsProvider>
               <StatusBar style="light" />
               {loading ? (
                 <View className="flex-1 justify-center items-center bg-[#2E2E2E]">
@@ -91,6 +93,7 @@
                     <OverlayGlobal />
                 </GestureHandlerRootView>
               )}
+            </PasswordsProvider>
           </LayoutContext.Provider>
         </StatusOverlayProvider>
     );
