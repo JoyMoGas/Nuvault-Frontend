@@ -31,4 +31,4 @@ We do **not** sell or share your data with third parties.
 - Users can delete saved passwords and their account at any time in the app.
 - No data is retained after deletion.
 
-If you have questions, contact: your-email@example.com
+If you have questions, contact: mogasjose.5@gmail.com
