@@ -1,14 +1,14 @@
 {
   "expo": {
     "name": "Nuvault",
-    "slug": "nuvault-frontend",
+    "slug": "nuvault-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/logo-text.svg",
+      "image": "./assets/banner.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,7 +19,7 @@
     "android": {
       "package": "com.mogas.nuvault",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo-text.svg",
+        "foregroundImage": "./assets/banner.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
@@ -34,10 +34,7 @@
     ],
     "scheme": "nuvault",
     "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "806b0060-f444-4eed-8fa3-2b145f8a0f70"
-      }
+      "router": {}
     },
     "owner": "joymogas"
   }
