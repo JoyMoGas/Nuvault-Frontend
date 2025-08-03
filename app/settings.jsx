@@ -41,7 +41,6 @@ export default function Settings() {
           Alert.alert("Error", "User ID not found in response.");
         }
       } catch (err) {
-        console.error("Error fetching user info", err);
         Alert.alert("Error", "Could not get user information.");
       }
     };
@@ -68,7 +67,6 @@ export default function Settings() {
         setShowDeletedModal(false);
       }, 2000);
     } catch (err) {
-      console.error("Delete account error:", err.response?.data || err.message);
       Alert.alert("Error", "The account could not be deleted. Please try again later.");
     } finally {
       setDeleting(false);

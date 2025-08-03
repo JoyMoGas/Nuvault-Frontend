@@ -63,7 +63,6 @@ export default function EditProfile() {
           });
         }
       } catch (error) {
-        console.error("Failed to fetch user data:", error);
         Alert.alert('Error', 'Could not load your profile data.');
       } finally {
         setLoading(false);
@@ -88,7 +87,6 @@ export default function EditProfile() {
       Alert.alert('Success', 'Profile updated successfully!');
       router.back();
     } catch (error) {
-      console.error('Update profile error:', error.response?.data || error.message);
       const errorMessage = error.response?.data?.message || 'An unexpected error occurred.';
       Alert.alert('Update Failed', errorMessage);
     } finally {

@@ -38,12 +38,9 @@
       setLoading(true);
       try {
         const token = await AsyncStorage.getItem('token');
-        console.log('🔍 Token desde checkAuth:', token);
         const res = await api.get('/validate-token');
-        console.log('✅ Token válido:', res.data);
         setIsLoggedIn(true);
       } catch (err) {
-        console.warn('❌ Token inválido o error en validación:', err.response?.data || err.message);
         await AsyncStorage.removeItem('token');
         setIsLoggedIn(false);
       } finally {
@@ -62,16 +59,13 @@
       
       // Redirige a /home solo si está en ruta pública y está logueado
       if (isLoggedIn && (path === '/' || path === '/login' || path === '/register')) {
-        console.log('User logged in, redirecting to /home');
         if (path !== '/home') router.replace('/home');
       }
 
       // Redirige a / solo si está en ruta privada y no está logueado
       if (!isLoggedIn && path !== '/' && path !== '/login' && path !== '/register') {
-        console.log('User NOT logged in, redirecting to /');
         if (path !== '/') router.replace('/');
       }
-      console.log('No redirection necessary');
     }, [loading, isLoggedIn, segments, router]);
 
 

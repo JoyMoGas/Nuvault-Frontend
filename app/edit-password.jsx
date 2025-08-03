@@ -55,7 +55,6 @@ export default function EditPassword() {
         setCategoryId(data.category_id || null);
         setSelectedTags(data.types?.map(t => t.type_id) || []);
       } catch (error) {
-        console.error('Error al cargar datos:', error);
         Alert.alert('Error', 'No se pudieron cargar los datos');
         router.back();
       } finally {
