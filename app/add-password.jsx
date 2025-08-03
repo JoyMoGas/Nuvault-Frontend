@@ -44,7 +44,6 @@ export default function AddPassword() {
       const tagsRes = await api.get('/tags/types');
       setTagsList(tagsRes.data);
     } catch (error) {
-      console.error("Error al cargar datos:", error);
     }
   };
   fetchData();
@@ -61,7 +60,7 @@ export default function AddPassword() {
 
   const addPassword = async () => {
     if (!service || !username || !password || !categoryId) {
-      Alert.alert('Error', 'Llena todos los campos requeridos');
+      Alert.alert('Error', 'Fill in all required fields');
       return;
     }
 
@@ -79,7 +78,7 @@ export default function AddPassword() {
       if (e.response?.status === 409) {
         setErrorMsg(e.response.data.message);
       } else {
-        Alert.alert('Error', 'No se pudo agregar la contraseña');
+        Alert.alert('Error', 'NCould not add password');
       }
     }
   };
@@ -163,6 +162,7 @@ export default function AddPassword() {
         onBlur={() => setFocusedField('')}
         className="bg-white rounded-xl px-4 py-3 mb-1 shadow-md"
         placeholder="e.g. Gmail..."
+        placeholderTextColor="#6b7280"
         style={{
           borderWidth: 1.5,
           borderColor: focusedField === 'service' ? '#facc15' : '#d1d5db'
@@ -179,6 +179,7 @@ export default function AddPassword() {
         onBlur={() => setFocusedField('')}
         className="bg-white rounded-xl px-4 py-3 mb-4 shadow-md"
         placeholder="user@gmail.com"
+        placeholderTextColor="#6b7280"
         style={{
           borderWidth: 1.5,
           borderColor: focusedField === 'email' ? '#facc15' : '#d1d5db'
@@ -202,6 +203,7 @@ export default function AddPassword() {
           onBlur={() => setFocusedField('')}
           className="flex-1"
           placeholder="***********"
+          placeholderTextColor="#6b7280"
         />
         <Pressable onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
           <Text className="text-yellow-500 font-bold">

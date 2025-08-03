@@ -202,24 +202,21 @@ export default function LoginForm({ onTabChange }) {
     // Verifica manualmente antes de hacer el setAuthKey
     setTimeout(async () => {
       const storedToken = await AsyncStorage.getItem('token');
-      console.log('✅ Token guardado:', storedToken); // Debug opcional
 
       if (storedToken) {
         setAuthKey((prev) => prev + 1);
       } else {
-        console.warn('⚠️ Token aún no disponible en AsyncStorage');
       }
     }, 200); // Puedes probar con 200ms, 300ms o hasta 500ms si hace falta
 
 
   } catch (err) {
-    console.warn('Login error:', err);
     if (err.response?.status === 400 && err.response.data.error === 'user_email') {
       setErrors((prev) => ({ ...prev, user_email: err.response.data.message }));
     } else if (err.response?.status === 401 && err.response.data.error === 'user_password') {
       setErrors((prev) => ({ ...prev, user_password: err.response.data.message }));
     } else {
-      setErrors({ form: 'Invalid credentials or server error.' });
+      setErrors({ form: 'Invalid credentials.' });
     }
   } finally {
     setLoading(false);
@@ -234,6 +231,7 @@ export default function LoginForm({ onTabChange }) {
       <TextInput
         className="bg-white rounded-xl px-4 py-3 mb-4 shadow-md"
         placeholder="your.email@example.com"
+        placeholderTextColor="#6b7280"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -261,6 +259,7 @@ export default function LoginForm({ onTabChange }) {
           secureTextEntry={!showPassword}
           className="flex-1 py-2" // Added py-2 for consistent height
           placeholder="Enter your password"
+          placeholderTextColor="#6b7280"
           onFocus={() => setFocusedField('password')}
           onBlur={() => setFocusedField('')}
         />
@@ -312,6 +311,7 @@ export default function LoginForm({ onTabChange }) {
                     value={resetEmail}
                     onChangeText={setResetEmail}
                     placeholder="your.email@example.com"
+                    placeholderTextColor="#6b7280"
                     keyboardType="email-address"
                     autoCapitalize="none"
                     style={styles.modalInput}
@@ -397,6 +397,7 @@ export default function LoginForm({ onTabChange }) {
               value={resetNewPassword}
               onChangeText={setResetNewPassword}
               placeholder="New Password"
+              placeholderTextColor="#6b7280"
               secureTextEntry
               style={styles.modalInput}
             />
@@ -404,6 +405,7 @@ export default function LoginForm({ onTabChange }) {
               value={resetConfirmPassword}
               onChangeText={setResetConfirmPassword}
               placeholder="Confirm New Password"
+              placeholderTextColor="#6b7280"
               secureTextEntry
               style={styles.modalInput}
             />

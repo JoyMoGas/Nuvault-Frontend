@@ -157,6 +157,7 @@ export default function RegisterForm({ onTabChange }) {
       <Text className="text-gray-500 mb-1">Username</Text>
       <TextInput
         placeholder="e.g. johndoe123"
+        placeholderTextColor="#6b7280"
         value={username}
         onChangeText={text => {
           setUsername(text);
@@ -174,6 +175,7 @@ export default function RegisterForm({ onTabChange }) {
       <Text className="text-gray-500 mb-1">Email Address</Text>
       <TextInput
         placeholder="your.email@example.com"
+        placeholderTextColor="#6b7280"
         value={email}
         onChangeText={text => {
           setEmail(text);
@@ -201,6 +203,7 @@ export default function RegisterForm({ onTabChange }) {
             if (errors.password) setErrors(prev => ({ ...prev, password: undefined }))
           }}
           placeholder="Create a secure password"
+          placeholderTextColor="#6b7280"
           secureTextEntry={!showPassword}
           onFocus={() => setFocused('password')}
           onBlur={() => setFocused('')}

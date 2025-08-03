@@ -16,6 +16,7 @@ import api from '../services/api'; // Asegúrate de tener esto configurado
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LogoutButton from '../components/buttons/LogoutButton';
 import { LayoutContext } from '../context/LayoutContext';
+import { usePasswords } from '../context/PasswordsContext';
 
 export default function Settings() {
   const router = useRouter();
@@ -27,6 +28,8 @@ export default function Settings() {
 
   const { setAuthKey } = useContext(LayoutContext);
 
+  const { clearPasswordsData } = usePasswords();
+
   useEffect(() => {
     const fetchUserId = async () => {
       try {
@@ -35,24 +38,25 @@ export default function Settings() {
         if (userIdFromResponse) {
           setUserId(userIdFromResponse);
         } else {
-          Alert.alert("Error", "No se encontró el ID de usuario en la respuesta.");
+          Alert.alert("Error", "User ID not found in response.");
         }
       } catch (err) {
         console.error("Error fetching user info", err);
-        Alert.alert("Error", "No se pudo obtener la información del usuario.");
+        Alert.alert("Error", "Could not get user information.");
       }
     };
     fetchUserId();
   }, []);
 
   const handleDeleteAccount = async () => {
-    if (!userId) return Alert.alert("Error", "ID de usuario no disponible");
+    if (!userId) return Alert.alert("Error", "User ID not available");
 
     try {
       setDeleting(true);
       await api.delete(`/user/${userId}`);
 
       await AsyncStorage.removeItem('token');
+      clearPasswordsData();
       setAuthKey(prev => prev + 1);
 
       setModalVisible(false);
@@ -65,7 +69,7 @@ export default function Settings() {
       }, 2000);
     } catch (err) {
       console.error("Delete account error:", err.response?.data || err.message);
-      Alert.alert("Error", "No se pudo eliminar la cuenta. Intenta más tarde.");
+      Alert.alert("Error", "The account could not be deleted. Please try again later.");
     } finally {
       setDeleting(false);
     }

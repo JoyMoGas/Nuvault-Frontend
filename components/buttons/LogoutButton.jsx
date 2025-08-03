@@ -4,6 +4,7 @@ import { useContext, useState } from 'react';
 import { LayoutContext } from '../../context/LayoutContext';
 import { ErrorIcon } from '../Icons';
 import { useRouter } from 'expo-router';
+import { usePasswords } from '../context/PasswordsContext';
 
 export default function LogoutButton({
   label = "Sign Out",
@@ -16,9 +17,11 @@ export default function LogoutButton({
   const [modalVisible, setModalVisible] = useState(false);
 
   const router = useRouter()
+  const { clearPasswordsData } = usePasswords();
 
   const handleLogOut = async () => {
     await AsyncStorage.removeItem('token');
+    clearPasswordsData();
     setAuthKey((prev) => prev + 1);
     setModalVisible(false);
     onLoggedOut();

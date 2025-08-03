@@ -76,6 +76,13 @@ export const PasswordsProvider = ({ children }) => {
     }
   };
 
+  const clearPasswordsData = () => {
+    setPasswordsCache({});
+    setUsername(null);
+    setHealthScore(null);
+  };
+
+
   return (
     <PasswordsContext.Provider
       value={{
@@ -89,6 +96,7 @@ export const PasswordsProvider = ({ children }) => {
         setHealthScore,
         username,
         fetchUsername,
+        clearPasswordsData,
       }}
     >
       {children}
