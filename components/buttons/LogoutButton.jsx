@@ -4,7 +4,7 @@ import { useContext, useState } from 'react';
 import { LayoutContext } from '../../context/LayoutContext';
 import { ErrorIcon } from '../Icons';
 import { useRouter } from 'expo-router';
-import { usePasswords } from '../context/PasswordsContext';
+import { usePasswords } from '../../context/PasswordsContext';
 
 export default function LogoutButton({
   label = "Sign Out",
