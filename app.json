@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "nuvualt-frontend",
-    "slug": "nuvualt-frontend",
+    "name": "Nuvault",
+    "slug": "nuvault-frontend",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/logo-text.svg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,7 +19,7 @@
     "android": {
       "package": "com.mogas.nuvault",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logo-text.svg",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
