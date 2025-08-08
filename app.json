@@ -18,9 +18,9 @@
     },
     "android": {
       "package": "com.mogas.nuvault",
-      "versionCode": 8,
+      "versionCode": 9,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/banner.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true

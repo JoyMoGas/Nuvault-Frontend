@@ -78,7 +78,7 @@ export default function AddPassword() {
       if (e.response?.status === 409) {
         setErrorMsg(e.response.data.message);
       } else {
-        Alert.alert('Error', 'NCould not add password');
+        Alert.alert('Error', 'Could not add password');
       }
     }
   };
@@ -201,7 +201,7 @@ export default function AddPassword() {
           secureTextEntry={!isPasswordVisible}
           onFocus={() => setFocusedField('password')}
           onBlur={() => setFocusedField('')}
-          className="flex-1"
+          className="flex-1 text-black"
           placeholder="***********"
           placeholderTextColor="#6b7280"
         />

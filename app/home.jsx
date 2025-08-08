@@ -58,6 +58,7 @@ export default function HomeScreen() {
   const [statusText, setStatusText] = useState('')
   const { showStatus } = useStatusOverlay();
   const allowedStatus = ['Edited', 'Deleted', 'Added', 'Copied'];
+  
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -127,8 +128,21 @@ export default function HomeScreen() {
   const router = useRouter();    
 
   useEffect(() => {
-    fetchPasswords(activeFilter);
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        await fetchPasswords(activeFilter);
+        setError(null);
+      } catch (err) {
+        setError('Error loading passwords');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, [activeFilter]);
+
 
   useEffect(() => {
     fetchHealthScore();
@@ -146,7 +160,7 @@ export default function HomeScreen() {
         );
       }
     } catch {
-      Alert.alert('Error', 'No se pudo cambiar favorito');
+      Alert.alert('Error', 'Could not change favorite');
     }
   };
 
@@ -194,7 +208,7 @@ export default function HomeScreen() {
       setPwdInput('');
       setShowPwdInput(false);
     } catch {
-      Alert.alert('Error', 'Contraseña inválida');
+      Alert.alert('Error', 'Invalid Password');
     }
   };
   const query = searchQuery.trim().toLowerCase();
@@ -239,7 +253,7 @@ export default function HomeScreen() {
     setPwdInput('');
     setShowPwdInput(false);
   } catch {
-    Alert.alert('Error', 'Contraseña inválida');
+    Alert.alert('Error', 'Invalid Password');
   }
 };
 

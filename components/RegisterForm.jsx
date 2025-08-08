@@ -207,7 +207,7 @@ export default function RegisterForm({ onTabChange }) {
           secureTextEntry={!showPassword}
           onFocus={() => setFocused('password')}
           onBlur={() => setFocused('')}
-          style={{ flex: 1, paddingVertical: 0 }}
+          style={{ flex: 1, paddingVertical: 0, color: 'black' }}
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
           <Text className="text-yellow-500 font-bold">{showPassword ? 'Hide' : 'View'}</Text>

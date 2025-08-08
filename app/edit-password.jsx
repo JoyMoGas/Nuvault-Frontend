@@ -191,7 +191,7 @@ export default function EditPassword() {
           secureTextEntry={!isPasswordVisible}
           onFocus={() => setFocusedField('password')}
           onBlur={() => setFocusedField('')}
-          className="flex-1"
+          className="flex-1 text-black"
         />
         <Pressable onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
           <Text className="text-yellow-500 font-bold">

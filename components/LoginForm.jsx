@@ -257,7 +257,7 @@ export default function LoginForm({ onTabChange }) {
           value={password}
           onChangeText={setPassword}
           secureTextEntry={!showPassword}
-          className="flex-1 py-2" // Added py-2 for consistent height
+          className="flex-1 py-2 text-black" // Added py-2 for consistent height
           placeholder="Enter your password"
           placeholderTextColor="#6b7280"
           onFocus={() => setFocusedField('password')}
