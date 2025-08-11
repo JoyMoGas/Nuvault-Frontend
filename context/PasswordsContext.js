@@ -14,6 +14,8 @@ export const PasswordsProvider = ({ children }) => {
   const [username, setUsername] = useState(null);
 
   const fetchPasswords = async (filter) => {
+    // Si el caché para este filtro ya existe, lo usamos.
+    // Si el caché fue vaciado, esta condición será falsa y se volverán a pedir los datos.
     if (passwordsCache[filter]) {
       return passwordsCache[filter];
     }
@@ -41,11 +43,34 @@ export const PasswordsProvider = ({ children }) => {
     }
   };
 
+  // CAMBIO: Se agrega la función para añadir contraseñas al contexto.
+  const addPassword = async (passwordData) => {
+    try {
+      // La llamada a la API ahora se hace aquí.
+      await api.post('/add-password', passwordData);
+
+      // CAMBIO CLAVE: Al tener éxito, vaciamos el caché.
+      // Esto obligará a cualquier pantalla que use `fetchPasswords`
+      // a obtener la lista actualizada del servidor.
+      setPasswordsCache({});
+
+      // También forzamos la actualización del health score.
+      await fetchHealthScore(true); // Pasamos true para forzar el refresco
+
+    } catch (error) {
+      // Si hay un error, lo lanzamos para que el componente que llama (AddPassword)
+      // pueda atraparlo y mostrar un mensaje al usuario.
+      console.error("Error adding password in context:", error);
+      throw error;
+    }
+  };
+
+
   const fetchUsername = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       const res = await api.get('/user-info', {
-        headers: { Authorization: `Bearer ${token}`},
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data?.username) {
         setUsername(res.data.username);
@@ -60,8 +85,9 @@ export const PasswordsProvider = ({ children }) => {
     }
   }
 
-  const fetchHealthScore = async () => {
-    if (healthScore !== null) return healthScore;
+  // CAMBIO: Se añade un parámetro 'forceRefresh' para poder invalidar el caché del score.
+  const fetchHealthScore = async (forceRefresh = false) => {
+    if (healthScore !== null && !forceRefresh) return healthScore;
     try {
       const token = await AsyncStorage.getItem('token');
       const res = await api.get('/health-score', {
@@ -86,6 +112,8 @@ export const PasswordsProvider = ({ children }) => {
   return (
     <PasswordsContext.Provider
       value={{
+        // CAMBIO: Exponemos la nueva función 'addPassword'.
+        addPassword,
         fetchPasswords,
         passwordsCache,
         setPasswordsCache,

@@ -97,7 +97,7 @@ export default function EditPassword() {
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#FACC15" />
       </View>
     );
   }

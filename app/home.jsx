@@ -1,7 +1,8 @@
 import { useEffect, useState, useContext, useRef } from 'react';
 import {
   View, Text, FlatList, ActivityIndicator,
-  Alert, ToastAndroid, Platform, Modal, TextInput, TouchableOpacity, ImageBackground
+  Alert, ToastAndroid, Platform, Modal, TextInput, TouchableOpacity, ImageBackground,
+  Pressable
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
@@ -19,7 +20,7 @@ import SearchBar from '../components/SearchBar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Animated } from 'react-native';
-import { CheckIcon, CopyIcon } from '../components/Icons';
+import { CheckIcon, CopyIcon, ErrorIcon } from '../components/Icons';
 import { StyleSheet } from 'react-native';
 import SettingsButton from '../components/buttons/SettingsButton';
 import {
@@ -58,7 +59,7 @@ export default function HomeScreen() {
   const [statusText, setStatusText] = useState('')
   const { showStatus } = useStatusOverlay();
   const allowedStatus = ['Edited', 'Deleted', 'Added', 'Copied'];
-  
+  const [modalDelete, setModalDelete] = useState({ visible: false, passId: null });
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -151,18 +152,25 @@ export default function HomeScreen() {
 
   const toggleFavorite = async (id) => {
     try {
-      const res = await api.patch(`/toggle-favorite/${id}`);
+      const token = await AsyncStorage.getItem('token');
+      const res = await api.patch(`/toggle-favorite/${id}`, null, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
       if (res.data.is_favorite !== undefined) {
-        setPasswords((prev) =>
-          prev.map((p) =>
+        setPasswordsCache((prev) => ({
+          ...prev,
+          [activeFilter]: prev[activeFilter].map((p) =>
             p.pass_id === id ? { ...p, is_favorite: res.data.is_favorite } : p
           )
-        );
+        }));
       }
-    } catch {
+    } catch (error) {
+      console.error('toggleFavorite error:', error);
       Alert.alert('Error', 'Could not change favorite');
     }
   };
+
 
   const toggleVisibility = (id) =>
     setVisiblePasswords((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -174,14 +182,50 @@ export default function HomeScreen() {
     }
     await Clipboard.setStringAsync(password);
     Platform.OS === 'android'
-      ? ToastAndroid.show('Contraseña copiada', ToastAndroid.SHORT)
-      : Alert.alert('Copiado', 'Contraseña copiada');
+      ? ToastAndroid.show('Password Copied', ToastAndroid.SHORT)
+      : Alert.alert('Copied', 'Password Copied');
   };
 
   const openAuthModal = (action, passId) => {
     setModalAuth({ visible: true, action, passId });
     setPwdInput('');
     setShowPwdInput(false);
+  };
+
+  const confirmDelete = async () => {
+    if (!passwordToDelete) return;
+
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const res = await api.delete(`/delete-password/${passwordToDelete}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.status === 200) {
+        setPasswordsCache(prev => ({
+          ...prev,
+          [activeFilter]: prev[activeFilter].filter(p => p.pass_id !== modalDelete.passId)
+        }));
+
+        showStatus('Deleted');
+      } else {
+        Alert.alert('Error', 'Could not delete password');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Could not delete password');
+    } finally {
+      setDeleteModalVisible(false);
+      setPasswordToDelete(null);
+    }
+  };
+
+  const onEdit = (id) => {
+    router.push(`/edit-password?pass_id=${id}`);
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalVisible(false);
+    setPasswordToDelete(null);
   };
 
   const confirmAuth = async () => {
@@ -406,8 +450,8 @@ export default function HomeScreen() {
               await copyToClipboard(password);
               triggerCopiedOverlay();
             }}
-            onEdit={(id) => openAuthModal('edit', id)}     // ← Abre modal de edición
-            onDelete={(id) => openAuthModal('delete', id)} // ← Abre modal de eliminación
+            onEdit={(id) => router.push(`/edit-password?pass_id=${id}`)}
+            onDelete={(id) => setModalDelete({ visible: true, passId: id })} 
             IconComponent={getCategoryIcon(item.category_name)}
           />
         )}
@@ -440,6 +484,114 @@ export default function HomeScreen() {
         onConfirm={(password) => handleAuthConfirm(password, modalAuth.action, modalAuth.passId)}
       />
 
+      <Modal
+        visible={modalDelete.visible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setModalDelete({ visible: false, passId: null })}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,.3)',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: 16,
+            padding: 24,
+            width: 300,
+            alignItems: 'center'
+          }}>
+            <View>
+              <ErrorIcon color="#EF4444" />
+            </View>
+            
+            <Text style={{ fontSize: 24, fontWeight: 'bold', marginVertical: 12 }}>Confirm Delete</Text>
+            <Text style={{ fontSize: 14, color: '#555', marginBottom: 24 }}>
+              Are you sure you want to delete this password?
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 16 }}>
+              <Pressable
+                style={{
+                  backgroundColor: '#EF4444',
+                  borderRadius: 8,
+                  paddingVertical: 10,
+                  paddingHorizontal: 24,
+                  marginRight: 8
+                }} // rojo para eliminar
+                onPress={async () => {
+                  try {
+                    const token = await AsyncStorage.getItem('token');
+                    const res = await api.delete(`/delete-password/${modalDelete.passId}`, {
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+
+                    if (res.status === 200) {
+                      setPasswordsCache(prev => ({
+                        ...prev,
+                        [activeFilter]: prev[activeFilter].filter(p => p.pass_id !== modalDelete.passId)
+                      }));
+                      triggerDeletedOverlay();
+                      setModalDelete({ visible: false, passId: null });
+                    } else {
+                      Alert.alert('Error', 'Could not delete password 2');
+                    }
+                  } catch (e) {
+                    Alert.alert('Error', 'Could not delete password');
+                  }
+                }}
+
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Delete</Text>
+              </Pressable>
+
+              <Pressable
+                style={{
+                  backgroundColor: '#e5e7eb',
+                  borderRadius: 8,
+                  paddingVertical: 10,
+                  paddingHorizontal: 24,
+                }}
+                onPress={() => setModalDelete({ visible: false, passId: null })}
+              >
+                <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>Cancel</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  // ... otros estilos ...
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    minWidth: 100,
+    marginHorizontal: 10,
+  },
+});

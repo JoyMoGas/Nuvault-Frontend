@@ -119,7 +119,7 @@ export const OtherIcon = (props) => (
 );
 
 export const ErrorIcon = (props) => (
-  <Ionicons name="alert-circle-outline" size={72} color="#FFA500" />
+  <Ionicons name="alert-circle-outline" size={72} color="#FFA500" {...props} />
 );
 
 export const WorkingIcon = (props) => (

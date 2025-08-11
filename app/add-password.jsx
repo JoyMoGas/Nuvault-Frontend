@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { AntDesign, Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useStatusOverlay } from '../context/StatusOverlayContext';
+import { usePasswords } from '../context/PasswordsContext';
 
 export default function AddPassword() {
   const router = useRouter();
@@ -31,6 +32,8 @@ export default function AddPassword() {
   const [modalVisible, setModalVisible] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [focusedField, setFocusedField] = useState('');
+
+  const { addPassword: addPasswordFromContext } = usePasswords();
 
   const { showStatus } = useStatusOverlay();
 
@@ -75,6 +78,35 @@ export default function AddPassword() {
       });
       router.replace({ 'pathname': '/home', params: { status: 'Added' } });
     } catch (e) {
+      if (e.response?.status === 409) {
+        setErrorMsg(e.response.data.message);
+      } else {
+        Alert.alert('Error', 'Could not add password');
+      }
+    }
+  };
+
+  const handleAddPassword = async () => {
+    if (!service || !username || !password || !categoryId) {
+      Alert.alert('Error', 'Fill in all required fields');
+      return;
+    }
+
+    try {
+      // CAMBIO: En lugar de llamar a la API directamente, llamamos a la función del contexto.
+      await addPasswordFromContext({
+        service,
+        username,
+        password,
+        category_id: categoryId,
+        type_id: selectedTags,
+        is_favorite: isFavorite
+      });
+      // Si la función del contexto se ejecuta sin errores, navegamos de vuelta.
+      router.replace({ 'pathname': '/home', params: { status: 'Added' } });
+
+    } catch (e) {
+      // Si la función del contexto lanzó un error, lo atrapamos aquí.
       if (e.response?.status === 409) {
         setErrorMsg(e.response.data.message);
       } else {
@@ -283,7 +315,7 @@ export default function AddPassword() {
 
       {/* Guardar */}
       <Pressable
-        onPress={addPassword}
+        onPress={handleAddPassword}
         className="bg-yellow-400 py-3 rounded-xl mb-10"
       >
         <Text className="text-center font-bold text-black">Add New Password</Text>

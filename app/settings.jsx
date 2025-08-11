@@ -17,6 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import LogoutButton from '../components/buttons/LogoutButton';
 import { LayoutContext } from '../context/LayoutContext';
 import { usePasswords } from '../context/PasswordsContext';
+import { ErrorIcon } from '../components/Icons';
 
 export default function Settings() {
   const router = useRouter();
@@ -178,7 +179,9 @@ export default function Settings() {
             width: 300,
             alignItems: 'center'
           }}>
-            <MaterialIcons name="error-outline" size={48} color="#EF4444" />
+            <View>
+              <ErrorIcon color="#EF4444" />
+            </View>
             <Text style={{ fontSize: 24, fontWeight: 'bold', marginVertical: 12 }}>Delete Account</Text>
             <Text style={{ fontSize: 14, color: '#555', marginBottom: 24 }}>
               Are you sure you want to delete your account? This action cannot be undone.
