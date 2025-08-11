@@ -20,7 +20,7 @@
       "package": "com.mogas.nuvault",
       "versionCode": 10,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
