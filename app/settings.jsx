@@ -31,23 +31,41 @@ export default function Settings() {
 
   const { clearPasswordsData } = usePasswords();
 
-  useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const response = await api.get('/profile');
-        const userIdFromResponse = response.data.user_id || response.data.id || null;
-        if (userIdFromResponse) {
-          setUserId(userIdFromResponse);
-        } else {
-          Alert.alert("Error", "User ID not found in response.");
-        }
-      } catch (err) {
-        Alert.alert("Error", "Could not get user information.");
-      }
-    };
-    fetchUserId();
-  }, []);
+  // settings.jsx
 
+useEffect(() => {
+  const fetchUserId = async () => {
+    try {
+      // 1. Obtener el token de AsyncStorage
+      const token = await AsyncStorage.getItem('token');
+
+      // Es buena práctica verificar si el token existe
+      if (!token) {
+        Alert.alert("Error", "No se encontró el token de sesión. Por favor, inicia sesión de nuevo.");
+        router.replace('/index'); // O a tu pantalla de login
+        return;
+      }
+
+      // 2. Usar el token en la llamada a la API
+      const response = await api.get('/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`, // <-- AÑADIR ESTO
+        },
+      });
+
+      const userIdFromResponse = response.data.user_id || response.data.id || null;
+      if (userIdFromResponse) {
+        setUserId(userIdFromResponse);
+      } else {
+        Alert.alert("Error", "User ID not found in response.");
+      }
+    } catch (err) {
+      // Ahora este error tiene más sentido, si ocurre es por otra razón (ej. token expirado)
+      Alert.alert("Error", "Could not get user information.");
+    }
+  };
+  fetchUserId();
+}, []);
   const handleDeleteAccount = async () => {
     if (!userId) return Alert.alert("Error", "User ID not available");
 

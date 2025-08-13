@@ -533,6 +533,7 @@ export default function HomeScreen() {
                         [activeFilter]: prev[activeFilter].filter(p => p.pass_id !== modalDelete.passId)
                       }));
                       triggerDeletedOverlay();
+                      fetchHealthScore(true);
                       setModalDelete({ visible: false, passId: null });
                     } else {
                       Alert.alert('Error', 'Could not delete password 2');

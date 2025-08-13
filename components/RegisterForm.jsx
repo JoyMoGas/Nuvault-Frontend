@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, Pressable, Alert, TouchableOpacity, Modal, StyleSheet, ActivityIndicator } from 'react-native';
 import api from '../services/api';
 import { CheckEmailIcon, CheckIcon, EmailIcon } from './Icons';
-
+import axios from 'axios';
 
 export default function RegisterForm({ onTabChange }) {
   const [username, setUsername] = useState('');
@@ -24,6 +24,7 @@ export default function RegisterForm({ onTabChange }) {
 
   const [errorMsg, setErrorMsg] = useState('')
   const [loading, setLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const isValidEmail = (email) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -89,28 +90,50 @@ export default function RegisterForm({ onTabChange }) {
     }
   };
 
-  const confirmRegistration = async () => {
-    const code = codeDigits.join('');
-    if (code.length !== 5) {
-      Alert.alert('Invalid Code', 'Please enter the 5-digit verification code.');
-      return;
-    }
-    try {
-      setErrors({});
-      await api.post('/register/confirm', {
+  
+
+const confirmRegistration = async () => {
+  const code = codeDigits.join('');
+  if (code.length !== 5) {
+    Alert.alert('Invalid Code', 'Please enter the 5-digit verification code.');
+    return;
+  }
+  setIsVerifying(true);
+  try {
+    setErrors({});
+
+    const source = axios.CancelToken.source();
+    const timeout = setTimeout(() => {
+      source.cancel("Request timeout");
+    }, 8000); // 8 segundos
+
+    await api.post(
+      '/register/confirm',
+      {
         username: username,
         user_email: email,
         new_password: password,
         first_name: firstName,
         last_name: lastName,
         code,
-      });
-      setModalVisible(false);
-      setCreateModal(true)
-    } catch (err) {
+      },
+      { cancelToken: source.token }
+    );
+
+    clearTimeout(timeout);
+
+    setModalVisible(false);
+    setCreateModal(true);
+  } catch (err) {
+    if (axios.isCancel(err)) {
+      Alert.alert('Timeout', 'The server took too long to respond.');
+    } else {
       Alert.alert('Error', 'Verification failed or registration error');
     }
-  };
+  } finally {
+    setIsVerifying(false);
+  }
+};
 
   const handleRegister = async () => {
     if (!codeSent) {
@@ -272,11 +295,19 @@ export default function RegisterForm({ onTabChange }) {
               ))}
             </View>
             <Pressable
-              style={[styles.modalButton]}
+              style={[styles.modalButton, isVerifying && { opacity: 0.7 }]}
               onPress={confirmRegistration}
+              disabled={isVerifying}
             >
-              <Text style={{ color: 'black', fontWeight: 'semibold', fontSize: 18 }}>Verify</Text>
+              {isVerifying ? (
+                <ActivityIndicator color="#000" />
+              ) : (
+                <Text style={{ color: 'black', fontWeight: 'semibold', fontSize: 18 }}>
+                  Verify
+                </Text>
+              )}
             </Pressable>
+
 
             {/* Botón Reenviar */}
             <Pressable

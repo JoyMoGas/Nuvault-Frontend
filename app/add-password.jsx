@@ -16,6 +16,7 @@ import { AntDesign, Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useStatusOverlay } from '../context/StatusOverlayContext';
 import { usePasswords } from '../context/PasswordsContext';
+import { ActivityIndicator } from 'react-native';
 
 export default function AddPassword() {
   const router = useRouter();
@@ -32,6 +33,8 @@ export default function AddPassword() {
   const [modalVisible, setModalVisible] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [focusedField, setFocusedField] = useState('');
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const { addPassword: addPasswordFromContext } = usePasswords();
 
@@ -91,7 +94,7 @@ export default function AddPassword() {
       Alert.alert('Error', 'Fill in all required fields');
       return;
     }
-
+    setIsLoading(true);
     try {
       // CAMBIO: En lugar de llamar a la API directamente, llamamos a la función del contexto.
       await addPasswordFromContext({
@@ -112,6 +115,8 @@ export default function AddPassword() {
       } else {
         Alert.alert('Error', 'Could not add password');
       }
+    } finally {
+      setIsLoading(false)
     }
   };
 
@@ -316,10 +321,15 @@ export default function AddPassword() {
       {/* Guardar */}
       <Pressable
         onPress={handleAddPassword}
-        className="bg-yellow-400 py-3 rounded-xl mb-10"
+        disabled={isLoading} // 👈 Deshabilitar mientras carga
+        className={`bg-yellow-400 py-3 rounded-xl mb-10 ${isLoading ? 'opacity-70' : ''}`}
       >
-        <Text className="text-center font-bold text-black">Add New Password</Text>
-      </Pressable>
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#000" /> // 👈 Muestra animación
+        ) : (
+          <Text className="text-center font-bold text-black">Add New Password</Text>
+        )}
+    </Pressable>
     </ScrollView>
   );
 }
