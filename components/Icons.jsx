@@ -169,3 +169,7 @@ export const NamesIcon = (props) => (
 export const PhoneIcon = (props) => (
   <Feather name="phone" size={24} color="#6B7280" {...props} />
 );
+
+export const SecurityIcon = (props) => (
+  <MaterialCommunityIcons name="shield-check" size={28} color="#facc15" {...props} />
+);

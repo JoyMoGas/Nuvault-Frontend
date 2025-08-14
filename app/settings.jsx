@@ -151,7 +151,7 @@ useEffect(() => {
 
         <View className="mb-6">
           <Text className="text-xl font-bold text-gray-700 mb-1">Notifications</Text>
-          <Text className="text-xs text-gray-500 italic mb-4">
+          <Text className="text-xs text-gray-500 italic mb-2">
             (This function is not available yet, so it does not affect anything if enabled or disabled)
           </Text>
           <SettingsSwitchItem
@@ -165,6 +165,9 @@ useEffect(() => {
 
         <View className="mb-6">
           <Text className="text-xl font-bold text-gray-700 mb-4">More</Text>
+          <Text className="text-xs text-gray-500 italic mb-4">
+            ("Language" function is not available yet, so clicking does nothing)
+          </Text>
           <SettingsItem
             icon={<MaterialIcons name="language" size={24} color="#6B7280" />}
             label="Language"
